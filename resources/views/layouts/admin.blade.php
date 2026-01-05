@@ -278,8 +278,14 @@
                 </div>
                 <div class="nav-item">
                     <a href="{{ route('admin.products.index') }}" class="nav-link {{ request()->routeIs('admin.products.*') ? 'active' : '' }}">
-                        <i class="bi bi-box"></i>
+                        <i class="bi bi-box-seam"></i>
                         <span>Products</span>
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="{{ route('admin.users.index') }}" class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+                        <i class="bi bi-people"></i>
+                        <span>Users</span>
                     </a>
                 </div>
                 <div class="nav-item">

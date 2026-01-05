@@ -78,6 +78,10 @@ Route::middleware(['auth', 'verified', \App\Http\Middleware\IsAdmin::class])->pr
     Route::resource('products', \App\Http\Controllers\Admin\ProductController::class);
     Route::get('/products/{product}/download', [\App\Http\Controllers\Admin\ProductController::class, 'download'])->name('products.download');
     
+    // Users
+    Route::resource('users', \App\Http\Controllers\Admin\UserController::class);
+    Route::patch('/users/{user}/toggle-admin', [\App\Http\Controllers\Admin\UserController::class, 'toggleAdmin'])->name('users.toggle-admin');
+    
     // Homepage Management
     Route::get('homepage', [\App\Http\Controllers\Admin\HomepageController::class, 'edit'])->name('homepage.edit');
     Route::put('homepage', [\App\Http\Controllers\Admin\HomepageController::class, 'update'])->name('homepage.update');
