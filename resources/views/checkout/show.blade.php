@@ -82,8 +82,11 @@
 
 <script>
     // Initialize Paddle
+    @if($paddleSettings["sandbox"])
+        Paddle.Environment.set('sandbox');
+    @endif
+    
     const paddleConfig = {
-        environment: '{{ $paddleSettings["sandbox"] ? "sandbox" : "production" }}',
         token: '{{ $paddleSettings["client_token"] }}',
     };
     
@@ -91,9 +94,8 @@
     
     // Validate token
     if (!paddleConfig.token || paddleConfig.token === '') {
-        console.error('PADDLE TOKEN MISSING! Check .env file for PADDLE_CLIENT_TOKEN');
-        alert('Paddle configuration error. Please contact administrator.\n\nMissing: PADDLE_CLIENT_TOKEN in .env');
-        // Don't initialize if token is missing
+        console.error('PADDLE TOKEN MISSING! Check Admin Settings');
+        alert('Paddle configuration error. Please contact administrator.');
     } else {
         Paddle.Initialize(paddleConfig);
     }
