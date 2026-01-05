@@ -90,7 +90,7 @@
         token: '{{ $paddleSettings["client_token"] }}',
     };
     
-    console.log('Initializing Paddle with config:', paddleConfig);
+
     
     // Validate token
     if (!paddleConfig.token || paddleConfig.token === '') {
@@ -157,7 +157,7 @@
         }, 2000);
     });
     
-    console.log('Paddle checkout ready. Price ID: {{ $product->paddle_price_id }}');
+
 </script>
 @endpush
 
