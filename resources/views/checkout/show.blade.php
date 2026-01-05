@@ -148,14 +148,13 @@
                 theme: 'light',
                 locale: 'en'
             }
-        }).then((result) => {
-            console.log('Paddle checkout opened:', result);
-        }).catch((error) => {
-            console.error('Paddle error:', error);
-            alert('Error opening checkout: ' + error.message);
+        });
+
+        // Reset button state after a short delay since Paddle.Checkout.open doesn't return a promise
+        setTimeout(() => {
             button.disabled = false;
             button.innerHTML = '<i class="bi bi-lock-fill me-2"></i>Proceed to Secure Payment';
-        });
+        }, 2000);
     });
     
     console.log('Paddle checkout ready. Price ID: {{ $product->paddle_price_id }}');
