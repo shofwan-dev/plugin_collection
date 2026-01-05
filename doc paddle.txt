@@ -1,0 +1,1404 @@
+API reference
+Use the Paddle API to create, read, and update information in your Paddle system.
+
+The Paddle API is a REST API that lets you integrate Paddle into your app and work with the data in your Paddle system. It uses JSON formatted data for requests and responses.
+
+Use the Paddle API to:
+
+Create, read, and update all the information in your Paddle system.
+Integrate Paddle with your app to build signup and other subscription management workflows.
+Plug Paddle into other systems that your business uses, like CRM, ERP, or accounting solutions.
+Fork our curated Postman collection to explore the Paddle Billing API right away.
+
+Base URL
+The base URLs for the Paddle API are the same for all endpoints. The API version is specified a header in your API request rather than in the path.
+
+Use different URLs for sandbox and live accounts:
+
+Sandbox
+Your sandbox account is for evaluation and testing. All transactions are tests, meaning transactions are simulated and any money isn't real.
+
+
+https://sandbox-api.paddle.com/
+Live
+Your live account is where customers can make purchases. Transactions are real, meaning payment methods are charged and you earn real money.
+
+
+https://api.paddle.com/
+
+Authentication
+Use Bearer authentication with API keys when making requests to the Paddle API.
+
+Paddle offers two types of authentication credentials:
+
+API keys
+Used to interact with the Paddle API in your backend. For example, building subscription upgrade and downgrade workflows.
+
+Intended only for server-side use.
+Has full access to your data, limited only by the permissions assigned to the API key.
+Must be kept secure and secret.
+Client-side tokens
+Used to work with Paddle.js in your frontend. For example, launching a checkout and previewing prices or transactions.
+
+Intended only for client-side use.
+Limited to opening checkouts, previewing prices, and previewing transactions.
+Safe to publish in your app code.
+This reference is about authenticating requests to the Paddle API in your backend. Don't call the Paddle API directly in your frontend. Use Paddle.js with client-side tokens instead.
+
+Get an API key
+An API key is required to authenticate requests to the Paddle API.
+
+Create an API key
+
+Keys can be created for either sandbox or live environments. Go to Paddle > Developer tools > Authentication to create a key.
+
+Assign permissions
+
+Permissions control what entities and operations the API key can access. Requests by keys without the required permissions fail with a forbidden error (403).
+
+Check format
+
+Your API key should be 69 characters long, be prefixed with pdl_, contain apikey_, and contain sdbx_ or live_ depending on the environment.
+
+Treat your API key like a password. Keep it safe and never share it with apps or people you don't trust.
+
+Authenticate requests
+All requests to the Paddle API require authentication unless explicitly stated. The API uses Bearer authentication.
+
+To authenticate, pass your Paddle API key using the Authorization header and the Bearer prefix. For example:
+
+
+Authorization: Bearer pdl_live_apikey_01gtgztp8f4kek3yd4g1wrksa3_q6TGTJyvoIz7LDtXT65bX7_AQO
+Endpoints in the API have an Access-Control-Allow-Origin header to block direct access from browsers.
+
+Test authentication
+The quickest way to test authentication is to send a request to the /event-types endpoint. This endpoint returns data even without any entities in Paddle and doesn't require any permissions.
+
+Live
+Sandbox
+cURL request
+
+curl https://api.paddle.com/event-types -H "Authorization: Bearer pdl_live_apikey_01gtgztp8f4kek3yd4g1wrksa3_q6TGTJyvoIz7LDtXT65bX7_AQO"
+Response
+If successful, you should get a response that includes a data array and a meta object.
+
+200 OK
+
+{
+  "data": [
+    {
+      "name": "transaction.billed",
+      "description": "Occurs when a transaction is billed. Its status field changes to billed and billed_at is populated.",
+      "group": "Transaction",
+      "available_versions": [
+        1
+      ]
+    },
+    {
+      "name": "transaction.canceled",
+      "description": "Occurs when a transaction is canceled. Its status field changes to canceled.",
+      "group": "Transaction",
+      "available_versions": [
+        1
+      ]
+    },
+    {
+      "name": "transaction.completed",
+If unsuccessful, Paddle returns a 403 error with information about what went wrong and how to troubleshoot.
+
+Check the permissions assigned to your API key at Paddle > Developer tools > Authentication to ensure the key works with the endpoint you're trying to access.
+
+Common errors
+authentication_missing	The request doesn't include an Authorization header. Check that you're provided a header using Bearer authentication in your request.
+authentication_malformed	The Authorization header is in the wrong format. Check that you set the Authorization header to Bearer <INSERT_API_KEY>.
+invalid_token	The API key you're trying to access isn't correct. Check that you have provided the correct API key, that it's in the correct environment, and that it hasn't been revoked.
+forbidden	The API key you're trying to use doesn't have the required permissions to perform the requested action. Check that the API key has the necessary permissions.
+
+Permissions
+Limit an API key's access to specific entities and actions in Paddle.
+
+Permissions control what API keys can do. They help you keep data secure by limiting each key to only the access it needs. You can create different keys with tailored permissions for different users, teams, or systems. This acts as a guardrail, preventing unauthorized access to your entire account.
+
+When creating or updating an API key, you can assign it specific permissions.
+
+Permissions are scoped to specific entities in Paddle, such as products, customers, or transactions. You can select two types of permission to determine what the key can do with an entity:
+
+Read - Entity (Read) or {entity}.read
+
+Read, list, and use the include parameter to include the entity in a response. Works for GET requests and preview requests (using POST or PATCH).
+
+Write - Entity (Write) or {entity}.write
+
+Create, update, archive, and delete the entity. Works for POST, PATCH, and DELETE requests. Having write permission for an entity automatically includes read permission for that entity.
+
+Select the correct permissions
+The permissions a key needs depend on the operation being performed and what entities it's accessing.
+
+Permissions required
+You do need permissions when working with:
+
+Operations that access entities
+
+For operations that return or take action on an entity, your API key needs permission for that entity.
+
+Example: Listing adjustments requires the adjustment.read permission.
+
+Responses enriched with entities
+
+When using the include parameter to enrich a response, your API key needs permission for any included entities.
+
+Example: Listing prices with include=product requires both price.read and product.read permissions.
+
+Entities that return customer portal URLs
+
+When a response can include authenticated URLs linking to the customer portal, your API key needs the customer_portal_session.write permission or they are not returned.
+
+Example: Without the customer_portal_session.write permission, listing subscriptions doesn't return the management_urls object containing authenticated links.
+
+Entities to populate in simulated webhooks
+
+When providing an entity ID in config.entities, your API key needs permission to read that entity and any related entities included in webhook payloads but not nested in the parent. For the entity you're attempting to populate, the request fails without the read permission. For related entities, static examples are used if the key has no read permissions.
+
+Example: Creating a notification simulation with config.entities.subscription_id requires the subscription.read permission or the request fails. Without the transaction.read permission, related transactions will fall back to static examples in simulated payloads. Transactions aren't nested in subscriptions by default.
+
+Permissions not required
+You don't need permissions when working with:
+
+Nested entities in responses
+
+When an operation returns different entities within the primary entity's response, these nested entities are included even without specific permissions for them.
+
+Example: A transaction response contains prices in the items array. These are included even if you only have transaction.read permission and not price.read.
+
+Indirectly created or updated entities
+
+Operations that indirectly create or update entities don't require additional write permissions for those generated entities.
+
+Example: Creating an adjustment that updates a transaction only requires adjustment.write, not transaction.write.
+
+Parent entities
+
+If an entity has a parent entity, it isn't a prerequisite that the permissions for the parent entities are needed.
+
+Example: Retrieving an address for a customer uses both address and customer path parameters, but only requires address.read, not customer.read.
+
+Requests made with API keys that don't have the required permissions return a forbidden error (403).
+
+Available permissions
+Entity	Permission	Operations
+Products	product.read	
+List products
+Get a product
+Use product in include
+product.write	
+Create a product
+Update a product
+Prices	price.read	
+List prices
+Get a price
+Use price in include
+price.write	
+Create a price
+Update a price
+Discounts	discount.read	
+List discounts
+Get a discount
+Use discount in include
+Configure simulated webhooks with existing discounts
+discount.write	
+Create a discount
+Update a discount
+Customers	customer.read	
+List customers
+Get a customer
+List credit balances for a customer
+Use customer in include
+Configure simulated webhooks with existing customers
+customer.write	
+Create a customer
+Update a customer
+Addresses	address.read	
+List addresses for a customer
+Get an address for a customer
+Use address in include
+Configure simulated webhooks with existing addresses
+address.write	
+Create an address for a customer
+Update an address for a customer
+Businesses	business.read	
+List businesses for a customer
+Get a business for a customer
+Use business in include
+Configure simulated webhooks with existing businesses
+business.write	
+Create a business for a customer
+Update a business for a customer
+Payment methods	payment_method.read	
+List payment methods for a customer
+Get a payment method for a customer
+Configure simulated webhooks with existing payment methods
+payment_method.write	
+Delete a payment method for a customer
+Customer authentication tokens	customer_auth_token.write	
+Generate an authentication token for a customer
+Customer portal sessions	customer_portal_session.write	
+Create a customer portal session
+Return management_urls in subscription responses
+Transactions	transaction.read	
+List transactions
+Get a transaction
+Get a PDF invoice for a transaction
+Preview a transaction
+Use next_transaction or recurring_transaction_details in include
+Configure simulated webhooks with existing transactions
+transaction.write	
+Create a transaction
+Update a transaction
+Revise a billed or completed transaction
+Retry payment for a subscription transaction
+Get a transaction to update payment method
+Subscriptions	subscription.read	
+List subscriptions
+Get a subscription
+Preview a one-time charge for a subscription
+Preview an update to a subscription
+Configure simulated webhooks with existing subscriptions
+subscription.write	
+Create a one-time charge for a subscription
+Update a subscription
+Activate a trialing subscription
+Pause a subscription
+Resume a paused subscription
+Cancel a subscription
+Adjustments	adjustment.read	
+List adjustments
+Get a PDF credit note for an adjustment
+Use adjustment or adjustment_totals in include
+adjustment.write	
+Create an adjustment
+Pricing preview	transaction.read	
+Preview prices
+Reports	report.read	
+List reports
+Get a report
+Get a CSV file for a report
+report.write	
+Create a report
+Events	notification.read	
+List events
+Use events in include
+Notification settings	notification_setting.read	
+List notification settings
+Get a notification setting
+notification_setting.write	
+Create a notification setting
+Update a notification setting
+Delete a notification setting
+Notifications	notification.read	
+List notifications
+Get a notification
+notification.write	
+Replay a notification
+Notification logs	notification.read	
+List logs for a notification
+Simulations	notification_simulation.read	
+List simulations
+Get a simulation
+notification_simulation.write	
+Create a simulation
+Update a simulation
+Simulation runs	notification_simulation.read	
+List runs for a simulation
+Get a run for a simulation
+notification_simulation.write	
+Create a run for a simulation
+Simulation run events	notification_simulation.read	
+List events for a simulation run
+Get an event for a simulation run
+notification_simulation.write	
+Replay an event for a simulation run
+Client-side tokens	client_tokens.read	
+Allow third-party integrations to view client-side tokens
+List client-side tokens
+Get a client-side token
+client_tokens.write	
+Allow third party integrations to modify client-side tokens
+Create client-side tokens
+Update client-side tokens
+
+Manage API keys
+Create, update, and revoke API keys used to authenticate server-side requests to the Paddle API.
+
+API keys are secure credentials that authenticate your requests to the Paddle API. They give you programmatic access to create transactions, manage subscriptions, and work with other entities in your Paddle account.
+
+They're intended only for server-side use.
+They have full access to your data, limited only by the permissions assigned to the API key.
+They must be kept secure and secret.
+By integrating with the Paddle API using API keys, you can handle provisioning, build more granular custom payment flows, and automate tasks.
+
+Looking to integrate Paddle in your frontend? Use Paddle.js with client-side tokens instead.
+How it works
+When you make requests to the Paddle API, include your API key in the Authorization header to authenticate your request. Paddle uses your API key to identify your account and verify that you have permission to perform the requested action.
+
+Example authenticated request to view all transactions
+
+curl -X GET "https://api.paddle.com/transactions" \
+-H "Authorization: Bearer pdl_sdbx_apikey_01gtgztp8f4kek3yd4g1wrksa3_q6TGTJyvoIz7LDtXT65bX7_AQO"
+You're in control over the security and use of your API keys, with key features including:
+
+Use separate API keys for testing
+Use separate API keys for sandbox and live environments to safely test without affecting production data.
+
+Check the format of your API keys
+Each key follows a standardized format to make it easier to identify and avoid issues when making requests.
+
+Limit access using permissions
+Assign permissions to your API keys to control what actions they can perform.
+
+Expire and rotate your API keys
+Limit the lifetime of your API keys and rotate them regularly to reduce the risk of exposure.
+
+Automatic secret scanning
+Paddle automatically detects exposed API keys in code repositories and takes the required action to keep your account safe.
+
+Store and use API keys securely
+Follow best practices and treat your API keys as sensitive security credentials.
+
+Sandbox vs live
+Paddle has separate sandbox and live environments, each with their own set of API keys. This separation helps you safely test your integrations, avoids impacting real customer data, and reduces the risk of exposing your API keys.
+
+Sandbox API keys
+Use these keys as you build and test your integration.
+
+They only work in the sandbox environment where no real money is involved.
+
+Sandbox API keys created after May 6, 2025 contain sdbx_.
+
+Create a sandbox API key in the sandbox dashboard.
+
+Live API keys
+Use these keys only when you're ready to process real transactions in your production app.
+
+They only work in the live environment where real money is involved.
+
+Live API keys created after May 6, 2025 contain live_.
+
+Create a live API key in the live dashboard.
+
+Format
+All API keys created after May 6, 2025 follow the standard format. You can identify these keys by the prefix pdl_. Keys created before this date follow the legacy format.
+
+API keys always follow a specific format.
+
+Standard format
+Legacy format
+Always start with pdl_ to identify them as Paddle API keys.
+Contain either live_ or sdbx_ after the prefix to identify the environment they're used for.
+Have apikey_ after the environment to identify them as API keys instead of client-side tokens.
+Have five underscores (_) within the key.
+Are 69 characters in length.
+Example of standard format API keys
+
+pdl_live_apikey_01gtgztp8f4kek3yd4g1wrksa3_q6TGTJyvoIz7LDtXT65bX7_AQO
+pdl_sdbx_apikey_01gtgztp8f4kek3yd4g1wrksa3_q6TGTJyvoIz7LDtXT65bX7_AQO
+Regex pattern for standard format API keys
+
+^pdl_(live|sdbx)_apikey_[a-z\d]{26}_[a-zA-Z\d]{22}_[a-zA-Z\d]{3}
+API keys are case-sensitive.
+
+Permissions
+When you create an API key, you must select which permissions to assign to it. You can select multiple permissions for a single key.
+
+You can have multiple API keys with different permissions. This lets you control which app or integration has access to which parts of your Paddle account.
+
+To change the permissions assigned to an API key, edit the API key.
+
+Requests made with API keys that don't have the required permissions return a forbidden error (403).
+
+Expiration
+API keys can have an expiry date. This is the date when the API key is no longer valid. Expiry dates are useful to limit the lifetime of a key and reduce the risk of exposure.
+
+You can set the expiry date when you create the API key. The default expiry date is 90 days from the date of creation and can't be more than one year from the date of creation.
+
+We strongly recommend setting an expiry date for your API keys. API keys can be used to access sensitive data and should be rotated regularly.
+
+You can subscribe to receive an email or a webhook when API keys are expiring and when they have expired:
+
+api_key.expiring	Occurs when an API key expires in seven days.
+api_key.expired	Occurs when an API key has expired.
+When you get a notification, rotate your API keys before they expire.
+
+Once a key has expired, it's no longer valid and can't be revalidated. Create a new API key to rotate.
+
+You can't update the expiry date of an existing API key. If you need to change the expiry date, you must create a new API key and revoke the old one.
+
+Secret scanning
+Paddle automatically monitors public repositories on GitHub to detect when your API keys are accidentally exposed. This helps protect your account from unauthorized access and potential security breaches.
+
+When an API key is detected in a repository, Paddle assesses the risk level and takes appropriate action.
+
+Risk level	Meaning	API key status
+High	Exposed publicly, like in a public GitHub repository.	Automatically revoked to protect your account.
+Low	Already expired or revoked.	Already inactive.
+The recommended follow-up actions you should take depend on the risk level:
+
+High
+Low
+When an exposure is detected, you'll receive an immediate notification through email. These are sent automatically to the owner of your Paddle account.
+
+You can optionally subscribe to webhook notifications for API key exposure events.
+
+Webhook	Description
+api_key_exposure.created	Occurs when an exposure is detected.
+api_key.revoked	Occurs when a key is automatically revoked.
+All exposures are tracked and visible in the dashboard for transparency and security auditing.
+
+Best practices
+Your API key is a sensitive security credential. It gives you access to your Paddle account and can be used to make changes to your account. If bad actors gain access to your API key, it can harm your business.
+
+Treat your API key like a password. Keep it safe and never share it with apps or people you don't trust.
+
+For this reason, API keys can only ever be viewed once and must immediately be stored securely after creation. If you lose your API key, you must revoke it and create a new one.
+
+You and your team are responsible for storing your API keys safely. Follow these best practices to help protect your API keys:
+
+Always
+Set an expiry date for your API keys.
+
+Rotate your API keys regularly.
+
+Use environment variables or credential management systems to store your API key.
+
+Never
+Share your API key in emails or chat.
+
+Hardcode your API key in your code.
+
+Include API keys in client-side code.
+
+Store your API key in a public or accessible location.
+
+Create an API key
+Create in the dashboard
+Go to Paddle > Developer Tools > Authentication.
+
+Click the API keys tab.
+
+Click New API key
+
+Illustration of the authentication screen in Paddle. It shows the API keys tab with a list of existing API keys. There's a button that says New API key in the top right.
+
+Add preliminary details
+Enter a name
+
+This should be a human-readable name that you can use to uniquely identify this key.
+
+Add a description
+
+This should be a human-readable description of the API key that has details about what the API key is used for and where.
+
+Illustration of the API key creation form. There's a field to enter the name and a field to enter the description.
+
+Set an expiry date
+Click the Expires on field.
+
+Choose a date in the future. The default is 90 days from the date of creation if untouched.
+
+Illustration of the expiry date section in the API key creation form. There's a field to enter the expiry date with a calendar icon to open a calendar to select a date.
+
+Set permissions
+Review the permissions reference guide to understand the permissions you need to assign to the API key.
+
+Select only the permissions needed. Select All if your key needs either read or write access to all entities.
+
+Illustration of the permissions section in the API key creation form. There's a list of permissions with a checkbox to select each.
+
+Save the API key
+Click Save when you're done.
+
+The API key is created and displayed on the page. It's only visible once. Store it securely.
+
+You're ready to use the API key to authenticate requests to the Paddle API.
+
+Illustration of an open modal to copy the API key. There's instructions on saving and a button that says Copy.
+
+Edit an API key
+You can edit the name, description, and permissions assigned to an API key. You can't update:
+
+Expiry dates
+
+You must create a new API key with the desired expiry date and revoke the old one.
+
+Expired keys
+
+Once keys have expired, they're no longer valid and can't be revalidated. Create a new API key and rotate the old key.
+
+Go to Paddle > Developer Tools > Authentication.
+
+Click the API keys tab.
+
+Click the overflow button button next to the API key you want to edit, then choose Edit
+
+Enter a new name and description for the API key.
+
+Select and clear the permissions you want to assign and unassign from the API key.
+
+Click Save when you're done.
+
+Illustration of the authentication screen in Paddle. The three dots icon is open on the API key that's being edited. There's a button that says Edit key. A panel to edit the API key is on the right. It shows the name, description, and permissions fields.
+
+Revoke an API key
+You can revoke an API key at any time. You might do this when a key is expiring. We recommend rotating keys at regular intervals for your security.
+
+Revoked API keys have a 60-minute grace period during which you can reactivate the key. After this time, the key is permanently revoked. You must create a new API key.
+
+Go to Paddle > Developer Tools > Authentication.
+
+Click the API keys tab.
+
+Click the overflow button button next to the API key you want to revoke, then choose Revoke
+
+Confirm you want to revoke the API key by filling in the confirmation box, then clicking Revoke
+
+Illustration of the revoke modal in Paddle. It shows the confirmation box with a field to confirm the action by typing in the name of the API key. There's a button that says Revoke.
+
+Reactivate an API key
+API keys have a 60-minute grace period to be reactivated after they're revoked. They can only be reactivated if they were revoked by a user and not by Paddle.
+
+You can't reactivate an API key after this grace period has expired. You must create a new API key.
+
+Legacy keys created before May 6, 2025 and API keys that were automatically revoked by Paddle, like those that had high risk exposures, can't be reactivated. Create a new standard format API key instead.
+
+Go to Paddle > Developer Tools > Authentication.
+
+Click the API keys tab.
+
+Click the overflow button button next to the API key you want to reactivate, then choose Reactivate
+
+Click Reactivate
+
+Illustration of the authentication screen in Paddle. It shows the API keys tab. There's a list of API keys with the three dots icon. The menu for the second token is open, highlighting the Reactivate option. There's a status for Recently revoked which gives information saying if there was a mistake, the user has an hour to reactivate the key.
+
+Check API keys
+Regularly check your API keys to monitor their lifecycle and security. This helps you identify which keys are active, expiring soon, or expired, as well as detect unexpected usage that could indicate potential security risks.
+
+View API keys
+Go to Paddle > Developer Tools > Authentication.
+
+Click the API keys tab.
+
+Illustration of the authentication screen in Paddle. It shows the API keys tab with a list of existing API keys. There's a button that says New API key in the top right.
+
+Review the status
+Identify the status of API keys to determine what actions, if any, you should take.
+
+Active
+
+The key is valid and can be used to authenticate requests. Audit where and when it's used.
+
+Expiring soon
+
+The key is approaching its expiry date. Plan to rotate it before it expires.
+
+Expired
+
+The key has expired past its expiry date. Replace it with a new key if you haven't already.
+
+Illustration of the authentication screen in Paddle. It shows the API keys tab. There's a list of API keys with their status and last used date for each.
+
+Check the last used date
+For all keys that are active, check the Last used column to see when each key was last used. Look for:
+
+Unexpected usage that could indicate a compromised key.
+
+Inactive keys that may be candidates for rotation or removal.
+
+Keys that were rotated recently to confirm they're no longer used.
+
+If any of the above apply, rotate or revoke the keys.
+
+Illustration of the authentication screen in Paddle. It shows the API keys tab. There's a list of API keys with their status and last used date for each.
+
+View API key exposures
+View details about any API key exposures that have been detected by Paddle's secret scanning system.
+
+Go to Paddle > Developer Tools > Authentication.
+
+Click the API keys tab.
+
+Click the overflow button button next to any API key, then choose View exposures.
+
+Illustration of the authentication screen in Paddle. It shows the API keys tab with a list of existing API keys. The three dots menu is open showing the View exposures option.
+
+Review exposure details
+For each exposure, you can see:
+
+Risk level	High or Low based on the exposure circumstances.
+Detection date	When the exposure was discovered.
+Source	Where this exposure occurred.
+Reference	Where the key was exactly found as exposed.
+Action taken	Whether the key was automatically revoked.
+Use this information to:
+
+Understand how the exposure occurred.
+
+Audit for any unauthorized usage and determine if you need to rotate the key.
+
+Improve your security practices to prevent future exposures.
+
+Illustration of the API key exposure details screen showing exposure information including risk level, detection date, source repository, and actions taken.
+
+Common errors
+invalid_token	The API key you're trying to access isn't correct. Check that you have provided the correct API key, that it's in the correct environment, and that it hasn't been revoked.
+forbidden	The API key you're trying to use doesn't have the required permissions to perform the requested action. Check that the API key has the necessary permissions.
+Events
+api_key.created	Occurs when an API key is created.
+api_key.updated	Occurs when an API key is updated.
+api_key.expiring	Occurs when an API key expires in seven days.
+api_key.expired	Occurs when an API key has expired.
+api_key.revoked	Occurs when an API key is revoked.
+api_key_exposure.created	Occurs when an API key has been detected as exposed.
+
+Rotate API keys
+Keep your app secure by regularly rotating API keys when they expire or are exposed.
+
+Regularly rotating API keys is a security best practice that helps protect accounts from unauthorized access. By setting expiry dates and creating new keys before old ones expire, you can minimize the risk of API keys being compromised without disrupting your app.
+
+You may also need to rotate keys immediately due to security incidents, like a key being exposed.
+
+How it works
+API key rotation is the process of replacing existing API keys with new ones.
+
+API keys can be created with an expiry date. Once an API key expires, it can no longer be used to authenticate requests to the Paddle API. This encourages you to change your keys at a regular interval.
+
+Paddle also automatically scans to find keys that have been exposed in public and private repositories through a process called secret scanning. If a key is exposed, it may be revoked automatically, or you may be notified to rotate it.
+
+Before you begin
+Create an API key with an expiry date. If an API key has no expiry date, you can still rotate keys but you aren't notified when the key is about to expire.
+
+We strongly recommend setting an expiry date for your API keys. API keys can be used to access sensitive data and should be rotated regularly.
+
+It's good practice to regularly check your API keys in Paddle > Developer tools > Authentication and ensure none are approaching their expiry date without a replacement being prepared, or none have had exposures that require immediate action.
+
+Overview
+Rotating your API keys follows this workflow:
+
+Set up notifications
+
+Get notified when a key is about to expire, has expired, or is exposed.
+
+Create a new API key
+
+Grab a new key immediately or before the current one expires.
+
+Store and use the new key
+
+Transition to using the new key in your app.
+
+Check API key activity
+
+Verify the new key works and the old key is no longer used.
+
+Revoke the old key
+
+Stop the old key from working and remove it.
+
+1
+Set up notifications
+Paddle can notify you when a key is about to expire, has expired, or is exposed to make the rotation process easier and more secure.
+
+Get notified when a key is about to expire or has expired
+Get notified when a key is exposed
+2
+Create a new API key
+Create a new API key as soon as possible. Plan for an overlap period between old and new keys to allow for a smooth transition without disruption to your app.
+
+If you're rotating due to an exposure, prioritize security over convenience and consider revoking the exposed key first.
+
+When creating a new API key:
+
+Assign the same permissions as the current key.
+Set an appropriate expiry date.
+Add a descriptive name that includes its purpose, team if applicable, and expiry date for easier management.
+Illustration showing an open drawer to create a new API key. There's a field to enter the name and a field to enter the description.
+
+API keys can't be created and rotated programmatically. New keys must be manually created in the dashboard and updated in your app.
+
+3
+Store and use the new API key
+API keys are only visible once upon creation.
+
+Store the key safely and replace the old key in all places where your app uses it.
+
+We recommend using a key management system with version control to track changes to your API keys. This makes it easier to manage key rotation and revert changes if needed.
+
+Follow these optional steps to minimize the risk when transitioning to the new API key.
+
+Illustration showing an open modal to copy the API key. There's instructions on saving and a button that says Copy.
+
+Verify your new key works
+Use old and new keys simultaneously
+4
+Check API key activity
+After updating your app to use the new key, check that:
+
+The new key is working properly
+
+Test the integration to verify that requests using the new API key are successful. Look at logs, errors, latency, and other metrics to ensure the new key is working properly.
+
+The old key is no longer being used
+
+Check the last used date of the old API key in Paddle > Developer Tools > Authentication. If the date hasn't changed since the update, it indicates that the old key is no longer being used anywhere in your app.
+
+Illustration of the authentication screen in Paddle. It shows the API keys tab. There's a list of API keys with the last used date for each.
+
+5
+Revoke the old key
+Once you've verified that your app is successfully using the new key and the old key is no longer in use, you can safely revoke the old API key instead of waiting for it to expire.
+
+Keep checking your logs to ensure there are no errors upon revoking the old key.
+
+If a key is accidentally revoked while still in use or errors appear in logs, there is a 60-minute grace period to reactivate the API key. Reactivation isn't possible if the key was revoked due to an exposure.
+
+If everything is working as expected, you can safely remove the old key from your key management system, environment variables, or any other places where it's stored. This includes the value of the OLD_PADDLE_KEY if you opted to use two keys simultaneously when switching.
+
+Versioning
+We update the Paddle API version when making breaking changes. Specify the version using the Paddle-Version header when making requests.
+
+When we make breaking changes to the Paddle API, we release a new version. We version using sequential numbering.
+
+The current version of the Paddle API is version 1.
+
+Older versions of the API continue to work as before when we release new versions. We don't automatically change your API version, so your integrations continue to work until you're ready to upgrade.
+
+We update our developer changelog whenever we change our API or developer tools. Updates include comprehensive information about what's changed and how to upgrade. See Developer changelog
+
+Breaking changes
+A breaking change is a change that may require you to make changes to your code to keep your integrations working. They're sometimes called backwards incompatible changes.
+
+Some examples of breaking changes:
+
+Removing or renaming a parameter or field.
+Removing or renaming an endpoint or operation.
+Removing functionality from an endpoint.
+Adding stricter validation for a field.
+Changing error handling.
+We don't automatically change your API version. You can opt in to new versions of the API in the dashboard when you're ready.
+
+Non-breaking changes
+We may make non-breaking changes to the API. These are changes that don't disrupt existing workflows, so you can adopt them at your own pace. They're sometimes called backwards compatible changes.
+
+Some examples of non-breaking changes:
+
+Adding new endpoints or operations.
+Adding new fields to responses.
+Adding new optional request parameters.
+Changing field ordering in responses.
+We'll update our developer changelog with information about non-breaking changes.
+
+Specify a version
+Your default version
+When you sign up for Paddle, the latest version of the Paddle API is set as your default version.
+
+We use this version of the API to respond to API requests where you don't explicitly set a version of the API.
+
+Webhook destinations don't use your default version. You can set the API version that you want to use when creating a webhook destination.
+
+Specify in requests
+To specify a version of the Paddle API when making a request, include a Paddle-Version header with your request. For example:
+
+cURL request
+
+curl https://api.paddle.com/event-types 
+  -H "Authorization: Bearer pdl_live_apikey_01gtgztp8f4kek3yd4g1wrksa3_q6TGTJyvoIz7LDtXT65bX7_AQO" 
+  -H "Paddle-Version: 1"
+You don't need to specify a version with your request, but it's good practice. Paddle uses your default version when you don't include a version header.
+
+You can't use a version of the API that's earlier than your default version.
+
+The Paddle-Version header that you send takes priority over your account's default version. This means you can test versions of the API that are later than your default version.
+
+Deprecation
+We don't deprecate older versions of our API right now. We'll communicate future announcements around deprecation in plenty of time.
+
+Paddle IDs
+Paddle IDs are unique identifiers for entities in Paddle. They easily identifiable by type and lexicographically sortable.
+
+Every entity in Paddle has a unique identifier, called a Paddle ID. Paddle IDs are made up of a prefix for the kind of entity, followed by a unique string of 26 alphanumeric characters.
+
+Prefixes are typically three characters, but may be longer. They're distinctive, so it's easy to tell what kind of entity you're working with when using a Paddle ID.
+
+Common examples
+For example, here are some common Paddle IDs:
+
+Entity	Prefix	Regex	Example
+Address	add_	^add_[a-z\d]{26}$	add_01gt202fr8131gahn63v9tczgm
+Adjustment	adj_	^adj_[a-z\d]{26}$	adj_01ghvjt9dbpnndeqjve8cktgqs
+Business	biz_	^biz_[a-z\d]{26}$	biz_01gsz92krfzy3hcx5h5rtgnfwz
+Customer	ctm_	^ctm_[a-z\d]{26}$	ctm_01gt202fpjt0e63p942gw4ybvh
+Discount	dsc_	^dsc_[a-z\d]{26}$	dsc_01gt218xfk7yztpvgmcazkes83
+Event	evt_	^evt_[a-z\d]{26}$	evt_01gt261mpgnbg1f3875zx2dsrd
+Notification	ntf_	^nft_[a-z\d]{26}$	ntf_01gtyac3x932yhfppx6w9x4zsb
+Notification destination	nftset_	^nftset_[a-z\d]{26}$	ntfset_01gtyac3wjcdtjs8csc0219x1p
+Product	pro_	^pro_[a-z\d]{26}$	pro_01gsz4vmqbjk3x4vvtafffd540
+Price	pri_	^pri_[a-z\d]{26}$	pri_01gsz91wy9k1yn7kx82aafwvea
+Report	rep_	^rep_[a-z\d]{26}$	rep_01hvgdpayq6kjzyk4hz5m02cpn
+Subscription	sub_	^sub_[a-z\d]{26}$	sub_01gvne45dvdhg5gdxrz6hh511r
+Transaction	txn_	^txn_[a-z\d]{26}$	txn_01gt261m3y0bngp73j1j8c6dge
+Work with IDs
+Paddle automatically generates IDs for you when you create entities using the API or dashboard. Use Paddle IDs to refer to entities throughout the Paddle platform.
+
+Create entities
+When creating entities using the API, Paddle returns the new Paddle ID for the entity in the response.
+
+Get entities
+When reading, updating, or deleting entities, use the ID to refer to the correct entity. For example:
+
+GET
+https://api.paddle.com/products/{product_id}
+product_id
+string
+Paddle ID of the product to get.
+
+List entities
+When working with list endpoints, Paddle uses the Paddle ID of the entity you're working with as the cursor for pagination.
+
+GET
+https://api.paddle.com/products?after={product_id}
+after
+Return entities after the specified cursor.
+
+product_id
+string
+Paddle ID of the product to use as the cursor.
+
+Relate entities
+Where entities are related, use Paddle IDs to link them. For example:
+
+When creating a price, pass a product_id to set the product that a price relates to.
+When creating a transaction, pass a customer_id and address_id to set who to bill.
+When the subscription.created event occurs, it includes the transaction_id of the transaction that resulted in this subscription being created.
+Sort by ID
+Paddle IDs are lexicographically sortable. Sorting by Paddle ID results in the same order as sorting by the creation date of an entity.
+
+Data types
+Make requests to the Paddle API in JSON. Paddle responds in JSON.
+
+The Paddle API uses JSON formatted data for requests and responses.
+
+When making requests, specify application/json as your Content-Type. For example:
+
+cURL request
+
+curl -X POST https://api.paddle.com/customers
+  -H "Authorization: Bearer pdl_live_apikey_01gtgztp8f4kek3yd4g1wrksa3_q6TGTJyvoIz7LDtXT65bX7_AQO" 
+  -H "Content-Type: application/json" 
+  -d "{ "name": "Sam Miller", "email": "sam@example.com" }"
+Paddle always sends responses as JSON. This includes errors as well as success responses.
+
+Dates and times
+All dates and times use the RFC 3339 format. For example:
+
+Time and date	RFC 3339
+3:30 PM on March 20 2024	2024-03-20T15:30:00.00Z
+2 AM on January 12 2025	2025-01-12T02:00:00.00Z
+8:50 PM on October 12 2025	2025-10-12T20:50:00.00Z
+Timezones
+Paddle supports over 200 countries and territories, so dates and times are UTC.
+
+Money
+Monetary values are returned as strings in the lowest denomination for a currency. For example, the API returns values in cents for USD and pence for GBP.
+
+Many currencies have two decimals, but this can vary. For example:
+
+Currency	Decimals	Example	Value
+USD	2	$24.99	"2499"
+JPY	0	¥1000	"1000"
+We recommend using a currency library to format monetary values to the correct number of decimals. They can also help you format values for different locales and currency standards, making sure that currency symbols are placed correctly and the correct decimal separator is used.
+
+For convenience, the preview prices operation returns formatted_unit_totals and formatted_totals objects alongside objects that return totals in the lowest denomination for a currency. Formatted totals objects return values formatted for the country or region you're working with, including the currency symbol.
+
+For a full list of supported currencies and their decimals, see Supported currencies
+
+Custom data
+You can add custom data to some entities in Paddle. Custom data must be valid JSON.
+
+Custom data
+Attach arbitrary key-value data to entities in Paddle when working with the API or checkout. Typically used for storing metadata or other useful information when working with third-party solutions.
+
+Custom data lets you add your own structured key-value data when working with some entities in Paddle. You can add it when working with the checkout or when creating or updating entities using the API.
+
+Once added, you can see custom data:
+
+When getting an entity or listing entities using the API.
+In webhook responses.
+In the Paddle dashboard against an entity — some entities only.
+It's great for adding information that you might want to pass through to third-party integrations, like a CRM or analytics solution.
+
+Custom data must be valid JSON, and you must provide at least one key.
+
+Add or update using the API
+You can add custom data to:
+
+Products
+Prices
+Discounts
+Transactions
+Subscriptions
+Customers
+Addresses
+Businesses
+To add custom data to an entity using the API, include a custom_data object when creating or updating entities.
+
+For example, to add custom data when creating a product:
+
+POST https://api.paddle.com/products
+
+{
+  "name": "AeroEdit Student",
+  "tax_category": "standard",
+  "description": "Essential tools for student pilots to manage flight logs, analyze performance, and plan routes, and ensure compliance. Valid student pilot certificate from the FAA required.",
+  "image_url": "https://paddle.s3.amazonaws.com/user/165798/bT1XUOJAQhOUxGs83cbk_pro.png",
+  "custom_data": {
+    "features": {
+      "aircraft_performance": true,
+      "compliance_monitoring": false,
+      "flight_log_management": true,
+      "payment_by_invoice": false,
+      "route_planning": true,
+      "sso": false
+    },
+    "suggested_addons": [
+      "pro_01h1vjes1y163xfj1rh1tkfb65",
+      "pro_01gsz97mq9pa4fkyy0wqenepkz"
+    ],
+    "upgrade_description": null
+  }
+Add using the checkout
+To add custom data when opening a checkout using Paddle.js, pass customData in the Paddle.Checkout.open() method call:
+
+
+Paddle.Checkout.open({
+  settings: {
+    displayMode: "overlay",
+    theme: "light",
+    locale: "en"
+  },
+  customData: {
+    "crm_id": 1234,
+    "utm_source": "google"
+  },
+  items: [
+    {
+      priceId: 'pri_01gm81eqze2vmmvhpjg13bfeqg',
+      quantity: 1
+    },
+    {
+      priceId: 'pri_01gm82kny0ad1tk358gxmsq87m',
+      quantity: 1
+    },
+    {
+Any custom data against a checkout is against the related transaction. If a checkout is for recurring items, it's stored against the created subscription, too.
+
+Rate limiting
+Rate limiting applies to the Paddle API. Send up to 240 requests per minute before getting a 429 error.
+
+Rate limiting helps protect the Paddle platform and make sure it works smoothly for everyone. It works by putting a cap on the amount of requests that an IP address can make in a certain timeframe.
+
+If you send too many requests, you'll get an error with a 429 response code.
+
+429 - Too Many Requests
+
+{
+  "error":{
+    "type":"api_error",
+    "code":"too_many_requests",
+    "detail":"You have exceeded the allowed rate limit, please retry your request after the number of seconds in the Retry-After header.",
+    "documentation_url":"https://developer.paddle.com/errors/too_many_requests"
+  }
+}
+Our rate limits are designed to protect the Paddle platform from abuse and maintain system stability. The limits are high enough to handle sales and promotions, along with other spikes in traffic. Contact the Paddle Seller Support team if you think you may exceed the limits.
+
+Rate limits
+Rate limiting may change. We'll communicate any changes in plenty of time on our developer changelog.
+
+Platform rate limits
+All operations in the Paddle API are rate limited, except the preview transaction and preview prices operations.
+
+An IP address can make up to 240 requests per minute.
+If exceeded, subsequent requests return a too_many_requests error (429).
+When you get this error, that IP address can't make another request for 60 seconds.
+Subscription rate limits
+Additional limits apply when updating subscriptions that result in immediate charges. For example, upgrading a subscription using prorated_immediately or full_immediately as the proration_billing_mode with no credit balance available.
+
+An account can make up to 20 chargeable updates to a subscription per hour, with a maximum of 100 per 24-hour period.
+If exceeded, subsequent requests return a subscription_immediate_charge_hour_limit_exceeded or subscription_immediate_charge_24_hour_limit_exceeded error (429).
+When you get these errors, you can't make another immediate charge for that subscription until the next hour or day.
+These limits apply on a per-subscription basis to help maintain a good customer experience. There's no cap on the total number of immediate charges across all subscriptions.
+Handle rate limiting
+When you get a too_many_requests error, it includes a Retry-After response header to let you know how long to wait before retrying your request. You should avoid making requests during this time.
+
+To handle platform rate limiting, we recommend watching for too_many_requests errors and building a retry mechanism that runs when the limit has expired.
+
+Avoid rate limiting
+To reduce your risk of being rate limited and make your integration as performant as possible, it's good practice to design your integration to use as few requests as possible.
+
+You can use the include parameter to get related entities when making a request, rather than making multiple requests. For example, you can include all related prices when getting a product:
+
+GET
+https://api.paddle.com/products/{product_id}?include=prices
+product_id
+string
+Paddle ID of the product entity to work with.
+
+include
+array[string]
+Include related entities in the response. Use a comma-separated list to specify multiple entities.
+
+Rather than sending requests in a loop, we recommend:
+
+Subscribing to webhooks to let you know when something's changed.
+Caching data that you'll use again for a short period — especially if you're building client-side applications.
+If you're regularly being rate limited, contact the Paddle support team who can help.
+
+Success responses
+When a request is successful, Paddle returns a data object or array with a 2xx HTTP response code. List endpoints return a data array and metadata object with pagination information.
+
+The Paddle API always returns requested entities in a data object or array. In most cases, it also returns a meta object with information about the request, including pagination information for list operations.
+
+Success responses return a 2xx response code.
+
+When there's an error, the API returns an error object instead. Errors return a 4xx or 5xx response code.
+
+Get an entity
+When you successfully get an entity, Paddle returns:
+
+A data object with the requested entity.
+A meta object with information about the request.
+The response code is 200.
+
+GET
+https://api.paddle.com/customers/{customer_id}
+customer_id
+string
+Paddle ID of the customer to get.
+
+200 OK
+
+{
+  "data": {
+    "id": "ctm_01hrffh7gvp29kc7xahm8wddwa",
+    "status": "active",
+    "custom_data": null,
+    "name": "Sam Miller",
+    "email": "sam@example.com",
+    "marketing_consent": false,
+    "locale": "en",
+    "created_at": "2024-03-08T16:49:53.691Z",
+    "updated_at": "2024-04-11T16:03:57.924146Z",
+    "import_meta": null
+  },
+  "meta": {
+    "request_id": "aa0009cb-18f7-4538-b1cd-ad29d91cfaa7"
+  }
+}
+List entities
+When you successfully list entities, Paddle returns:
+
+A data array that includes a paginated list of requested entities.
+A meta object that includes pagination information.
+The response code is 200.
+
+GET
+https://api.paddle.com/customers
+GET https://api.paddle.com/customers
+
+{
+  "data": [
+    {
+      "id": "ctm_01hv6y1jedq4p1n0yqn5ba3ky4",
+      "status": "active",
+      "custom_data": null,
+      "name": "Jo Brown-Anderson",
+      "email": "jo@example.com",
+      "marketing_consent": false,
+      "locale": "en",
+      "created_at": "2024-04-11T15:57:24.813Z",
+      "updated_at": "2024-04-11T15:59:56.658719Z",
+      "import_meta": null
+    },
+    {
+      "id": "ctm_01h844q4mznqpgqgm6evgw1w63",
+      "status": "active",
+      "custom_data": null,
+      "name": "Jamie Price",
+      "email": "jamie@example.com",
+Create an entity
+When you successfully create an entity, Paddle returns:
+
+A data object with the created entity.
+A meta object with information about the request.
+All the fields against the new entity are returned, including any generated or calculated fields. If you omitted optional fields, Paddle returns those with the default values.
+
+The response code is 201.
+
+Request
+POST
+https://api.paddle.com/customers
+This example creates a customer with only the required fields.
+
+POST https://api.paddle.com/customer
+
+{
+  "email": "jo@example.com",
+  "name": "Jo Brown"
+}
+Response
+Paddle returns the new entity with all fields, not just those you included in your request. Generated fields, like the Paddle ID, are included.
+
+201 Created
+
+{
+  "data": {
+    "id": "ctm_01hv6y1jedq4p1n0yqn5ba3ky4",
+    "status": "active",
+    "custom_data": null,
+    "name": "Jo Brown",
+    "email": "jo@example.com",
+    "marketing_consent": false,
+    "locale": "en",
+    "created_at": "2024-04-11T15:57:24.813Z",
+    "updated_at": "2024-04-11T15:57:24.813Z",
+    "import_meta": null
+  },
+  "meta": {
+    "request_id": "9bcdcc29-e180-4055-ad3d-d37e5dc5e56d"
+  }
+}
+Update an entity
+When you successfully update an entity, Paddle returns:
+
+A data object with the updated entity.
+A meta object with information about the request.
+All the fields against the updated entity are returned, including fields that you didn't change.
+
+The response code is 200.
+
+Request
+This example archives a customer by changing the status field to archived.
+
+PATCH
+https://api.paddle.com/customers/{customer_id}
+customer_id
+string
+Paddle ID of the customer to update.
+
+PATCH api.paddle.com/customers/ctm_01hrffh7gvp29kc7xahm8wddwa
+
+{
+  "status": "archived"
+}
+Response
+Paddle returns the updated entity with all fields, not just those you included in your request.
+
+200 OK
+
+{
+  "data": {
+    "id": "ctm_01hrffh7gvp29kc7xahm8wddwa",
+    "status": "archived",
+    "custom_data": null,
+    "name": "Sam Miller",
+    "email": "sam@example.com",
+    "marketing_consent": false,
+    "locale": "en",
+    "created_at": "2024-03-08T16:49:53.691Z",
+    "updated_at": "2024-04-11T16:03:57.924146Z",
+    "import_meta": null
+  },
+  "meta": {
+    "request_id": "aa0009cb-18f7-4538-b1cd-ad29d91cfaa7"
+  }
+}
+
+Errors
+When a request fails, Paddle returns an error object with an appropriate HTTP response code. Errors are consistent and include information to help you troubleshoot.
+
+The Paddle API uses standard HTTP response codes to let you know when something's wrong. It also returns some useful information to help you troubleshoot.
+
+For a comprehensive overview of all the errors you might encounter when working with the Paddle API, check out our error reference. Each error includes common causes and information on how to fix.
+
+HTTP status codes
+Errors generally return a 4xx response code.
+
+Though rare, you may get a 5xx response code. This means that there's a problem with the Paddle API rather than your code. Try your request later, or check our status page.
+
+Success responses return a 2xx status code.
+
+Error object
+When you encounter an error, the API returns an error object rather than a data object or array.
+
+error
+object
+type
+string
+Type of error encountered.
+
+code
+string
+Short snake case string that describes this error. Use to search the error reference.
+
+detail
+string
+Some information about what went wrong as a human-readable string.
+
+documentation_url
+string<uri>
+Link to a page in the error reference for this specific error.
+
+meta
+object
+Information about this response.
+
+request_id
+string
+Unique ID for the request relating to this response. Provide this when contacting Paddle support about a specific request.
+
+For example:
+
+400 - Bad request
+
+{
+  "error": {
+    "type": "request_error",
+    "code": "not_found",
+    "detail": "Entity pro_01gsz97mq9pa4fkyy0wqenepkz not found",
+    "documentation_url": "https://developer.paddle.com/errors/shared/not_found"
+  },
+  "meta": {
+    "request_id": "9346b365-4cad-43a6-b7c1-48ff6a1c7836"
+  }
+}
+Validation error object
+When making requests, all fields are checked against the API reference to make sure they're valid. If a value for a field fails validation, Paddle includes an array of errors to let you know which fields need your attention.
+
+error
+object
+type
+string
+Type of error encountered.
+
+code
+string
+Short snake case string that describes this error. Use to search the error reference.
+
+detail
+string
+Some information about what went wrong as a human-readable string.
+
+documentation_url
+string<uri>
+Link to a page in the error reference for this specific error.
+
+errors
+array[object]
+List of validation errors.
+
+meta
+object
+Information about this response.
+
+request_id
+string
+Unique ID for the request relating to this response. Provide this when contacting Paddle support about a specific request.
+
+For example:
+
+400 - Bad request
+
+{
+  "error": {
+    "type": "request_error",
+    "code": "product_invalid_field",
+    "detail": "Invalid values for fields in request",
+    "documentation_url": "https://developer.paddle.com/errors/product/product_invalid_field",
+    "errors": [
+      {
+        "field": "name",
+        "message": "max length of 200 exceeded, provided value length 220"
+      },
+      {
+        "field": "image_url",
+        "message": "must be a valid image"
+      }
+    ]
+  },
+  "meta": {
+    "request_id": "9346b365-4cad-43a6-b7c1-48ff6a1c7836"
+  }
+
+Include and initialize Paddle.js
+Include Paddle.js on your website to start building checkout experiences with Paddle. Initialize and authenticate by passing a client-side token.
+
+Using script tag
+Using JavaScript package manager
+You can manually load the Paddle.js script on your website using a script tag.
+
+Add the script tag to your HTML
+Add the Paddle.js script to the <head> section of your HTML:
+
+
+<script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
+Always load Paddle.js directly from https://cdn.paddle.com/. This makes sure that you're running with the latest security and feature updates from Paddle.
+
+Initialize and authenticate
+You need a client-side token to authenticate with Paddle.js. Create a token in Paddle > Developer tools > Authentication.
+
+Never use API keys with Paddle.js. API keys should be kept secret and away from the frontend. Revoke the key if it has been compromised. Use client-side tokens starting with test_ or live_.
+
+Initialize Paddle.js by calling the Paddle.Initialize() method with a configuration object that includes a client-side token as the token property:
+
+
+<script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
+<script type="text/javascript">
+  Paddle.Initialize({ 
+    token: 'live_7d279f61a3499fed520f7cd8c08' // replace with a client-side token
+  });
+</script>
+Setup Retain
+Paddle.js integrates with Retain, so you don't have to include a separate Retain script in your app or website. Client-side tokens for live accounts authenticate with both Paddle Billing and Paddle Retain, so there's no need to pass a separate key for Retain.
+
+You should initialize Paddle.js in the following places to take full advantage of Retain:
+
+Public-facing page
+
+Retain emails link back to your site, so customers can complete or confirm actions. Initialize Paddle.js on a public-facing marketing page that Retain can redirect to, like your homepage or pricing page.
+
+In-app authenticated pages
+
+Initialize Paddle.js on logged-in, authenticated pages so Retain can send in-app payment recovery and term optimization notifications, and display in-app cancellation flows.
+
+Public-facing site
+For public-facing pages, you can use the standard initialization script from the previous step without any extra configuration.
+
+In-app authenticated pages
+You need to include a pwCustomer object in the configuration object passed to the Paddle.Initialize() method. The id property of the pwCustomer object must be the Paddle ID of a customer entity. Other IDs and internal identifiers for a customer don't work with Retain.
+
+pwCustomer
+object or null
+Identifier for a logged-in customer for Paddle Retain. Pass an empty object if you don't have a logged-in customer. Paddle Retain is only loaded for live accounts.
+
+id
+string
+Paddle ID of a customer entity, prefixed ctm_. Only customer IDs are accepted. Don't pass subscription IDs, other Paddle IDs, or your own internal identifiers for a customer.
+
+
+<script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
+<script type="text/javascript">
+  Paddle.Initialize({
+    token: 'live_7d279f61a3499fed520f7cd8c08', // replace with a client-side token
+    pwCustomer: {
+      id: 'ctm_01gt25aq4b2zcfw12szwtjrbdt' // replace with a customer Paddle ID
+    }
+  });
+</script>

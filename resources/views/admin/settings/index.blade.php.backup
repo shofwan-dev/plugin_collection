@@ -1,0 +1,278 @@
+@extends('layouts.admin')
+
+@section('page-title', 'Settings')
+
+@section('content')
+<form method="POST" action="{{ route('admin.settings.update') }}" enctype="multipart/form-data">
+    @csrf
+    @method('PUT')
+
+    <div class="row g-4">
+        <!-- General Settings -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="bi bi-globe text-primary me-2"></i> General Settings
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Site Name</label>
+                            <input type="text" name="site_name" value="{{ $settings['general']['site_name'] ?? '' }}" 
+                                   class="form-control" placeholder="CF7 to WhatsApp">
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Site Description</label>
+                            <textarea name="site_description" rows="3" class="form-control" 
+                                      placeholder="Enter site description">{{ $settings['general']['site_description'] ?? '' }}</textarea>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Contact Email</label>
+                            <input type="email" name="contact_email" value="{{ $settings['general']['contact_email'] ?? '' }}" 
+                                   class="form-control" placeholder="contact@example.com">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Contact Phone</label>
+                            <input type="text" name="contact_phone" value="{{ $settings['general']['contact_phone'] ?? '' }}" 
+                                   class="form-control" placeholder="+1234567890">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- WhatsApp Settings -->
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="bi bi-whatsapp text-success me-2"></i> WhatsApp Settings
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">API URL</label>
+                            <input type="url" name="whatsapp_api_url" value="{{ $settings['whatsapp']['whatsapp_api_url'] ?? '' }}" 
+                                   class="form-control" placeholder="https://api.whatsapp-service.com/send">
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">API Key</label>
+                            <input type="text" name="whatsapp_api_key" value="{{ $settings['whatsapp']['whatsapp_api_key'] ?? '' }}" 
+                                   class="form-control" placeholder="Your API key">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Sender Number</label>
+                            <input type="text" name="whatsapp_sender" value="{{ $settings['whatsapp']['whatsapp_sender'] ?? '' }}" 
+                                   class="form-control" placeholder="6281234567890">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Admin Number</label>
+                            <input type="text" name="whatsapp_admin_number" value="{{ $settings['whatsapp']['whatsapp_admin_number'] ?? '' }}" 
+                                   class="form-control" placeholder="6281234567890">
+                            <small class="text-muted">Use phone number or WhatsApp group ID</small>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="whatsapp_enabled" value="1" 
+                                       {{ ($settings['whatsapp']['whatsapp_enabled'] ?? false) ? 'checked' : '' }} id="whatsappEnabled">
+                                <label class="form-check-label fw-semibold" for="whatsappEnabled">
+                                    Enable WhatsApp Notifications
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Test WhatsApp Button -->
+                        <div class="col-12">
+                            <div class="border-top pt-3 mt-2">
+                                <p class="text-muted small mb-2">
+                                    <i class="bi bi-info-circle me-1"></i> Test your WhatsApp configuration
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-light border-0">
+                    <form method="POST" action="{{ route('admin.settings.test-whatsapp') }}" class="d-inline">
+                        @csrf
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-send me-2"></i> Test WhatsApp
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Email Settings -->
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="bi bi-envelope text-info me-2"></i> Email Settings (SMTP)
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label fw-semibold">SMTP Host</label>
+                            <input type="text" name="email_host" value="{{ $settings['email']['email_host'] ?? '' }}" 
+                                   class="form-control" placeholder="smtp.gmail.com">
+                            <small class="text-muted">Example: smtp.gmail.com, smtp.mailtrap.io</small>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Port</label>
+                            <input type="number" name="email_port" value="{{ $settings['email']['email_port'] ?? '587' }}" 
+                                   class="form-control" placeholder="587">
+                            <small class="text-muted">587 or 465</small>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Encryption</label>
+                            <select name="email_encryption" class="form-select">
+                                <option value="tls" {{ ($settings['email']['email_encryption'] ?? 'tls') === 'tls' ? 'selected' : '' }}>TLS</option>
+                                <option value="ssl" {{ ($settings['email']['email_encryption'] ?? '') === 'ssl' ? 'selected' : '' }}>SSL</option>
+                                <option value="" {{ ($settings['email']['email_encryption'] ?? '') === '' ? 'selected' : '' }}>None</option>
+                            </select>
+                            <small class="text-muted">TLS (port 587) or SSL (port 465)</small>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Username</label>
+                            <input type="text" name="email_username" value="{{ $settings['email']['email_username'] ?? '' }}" 
+                                   class="form-control" placeholder="your-email@gmail.com">
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Password</label>
+                            <input type="password" name="email_password" value="{{ $settings['email']['email_password'] ?? '' }}" 
+                                   class="form-control" placeholder="Your SMTP password or app password">
+                            <small class="text-muted">For Gmail, use App Password (not your account password)</small>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">From Address</label>
+                            <input type="email" name="email_from_address" value="{{ $settings['email']['email_from_address'] ?? '' }}" 
+                                   class="form-control" placeholder="noreply@example.com">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">From Name</label>
+                            <input type="text" name="email_from_name" value="{{ $settings['email']['email_from_name'] ?? '' }}" 
+                                   class="form-control" placeholder="CF7 to WhatsApp">
+                        </div>
+
+                        <!-- Test Email Info -->
+                        <div class="col-12">
+                            <div class="border-top pt-3 mt-2">
+                                <p class="text-muted small mb-2">
+                                    <i class="bi bi-info-circle me-1"></i> Test your SMTP configuration
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-light border-0">
+                    <form method="POST" action="{{ route('admin.settings.test-email') }}" class="d-inline">
+                        @csrf
+                        <button type="submit" class="btn btn-info">
+                            <i class="bi bi-envelope-check me-2"></i> Test Email
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Branding -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="bi bi-image text-warning me-2"></i> Branding
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Site Logo</label>
+                        
+                        @if($settings['general']['site_logo'] ?? false)
+                        <div class="mb-3 p-3 bg-light rounded border">
+                            <p class="text-muted small mb-2">Current Logo:</p>
+                            <img src="{{ asset('storage/' . $settings['general']['site_logo']) }}" 
+                                 alt="Current Logo" 
+                                 class="img-fluid"
+                                 style="max-height: 80px; object-fit: contain;"
+                                 id="current-logo">
+                        </div>
+                        @endif
+
+                        <input type="file" 
+                               name="site_logo" 
+                               id="site_logo"
+                               accept="image/jpeg,image/jpg,image/png,image/svg+xml"
+                               class="form-control"
+                               onchange="previewImage(this, 'logo-preview')">
+                        <small class="text-muted d-block mt-1">
+                            PNG, JPG, SVG (max 2MB)<br>
+                            Logo will be used for navbar, footer, and favicon.
+                        </small>
+                        <div id="logo-preview" class="mt-2"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Save Button -->
+            <div class="card border-0 shadow-sm mt-4" style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);">
+                <div class="card-body p-4 text-white text-center">
+                    <i class="bi bi-save fs-1 mb-3"></i>
+                    <h6 class="fw-bold mb-3">Save Changes</h6>
+                    <button type="submit" class="btn btn-light w-100 fw-semibold">
+                        <i class="bi bi-check-circle me-2"></i> Save Settings
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@push('scripts')
+<script>
+function previewImage(input, previewId) {
+    const preview = document.getElementById(previewId);
+    preview.innerHTML = '';
+    
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            const div = document.createElement('div');
+            div.className = 'p-3 bg-primary bg-opacity-10 rounded border border-primary';
+            
+            const label = document.createElement('p');
+            label.className = 'text-primary small mb-2 fw-semibold';
+            label.textContent = 'Preview:';
+            
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.className = 'img-fluid';
+            img.style.maxHeight = '80px';
+            img.style.objectFit = 'contain';
+            img.alt = 'Preview';
+            
+            div.appendChild(label);
+            div.appendChild(img);
+            preview.appendChild(div);
+        }
+        
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+</script>
+@endpush
+@endsection

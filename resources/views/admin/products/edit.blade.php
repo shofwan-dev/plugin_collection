@@ -1,0 +1,339 @@
+@extends('layouts.admin')
+
+@section('page-title', 'Edit Product')
+
+@section('content')
+<div class="container-fluid px-4 py-4">
+    <!-- Header -->
+    <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="mb-1 fw-bold">
+                    <i class="bi bi-box-seam text-primary me-2"></i> Edit Product
+                </h2>
+                <p class="text-muted mb-0">{{ $product->name }}</p>
+            </div>
+            <a href="{{ route('admin.products.index') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i> Back to Products
+            </a>
+        </div>
+    </div>
+
+    <form action="{{ route('admin.products.update', $product) }}" method="POST" enctype="multipart/form-data">
+        @csrf
+        @method('PUT')
+
+        <div class="row g-4">
+            <!-- Main Content -->
+            <div class="col-lg-8">
+                <!-- Basic Information -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white border-0 py-3">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="bi bi-info-circle text-primary me-2"></i> Basic Information
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row g-3">
+                            <!-- Product Name -->
+                            <div class="col-md-6">
+                                <label for="name" class="form-label fw-semibold">
+                                    Product Name <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" 
+                                       class="form-control @error('name') is-invalid @enderror" 
+                                       id="name" 
+                                       name="name" 
+                                       value="{{ old('name', $product->name) }}" 
+                                       required>
+                                @error('name')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <!-- Type -->
+                            <div class="col-md-6">
+                                <label for="type" class="form-label fw-semibold">
+                                    Type <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select @error('type') is-invalid @enderror" 
+                                        id="type" 
+                                        name="type" 
+                                        required>
+                                    <option value="plugin" {{ old('type', $product->type) == 'plugin' ? 'selected' : '' }}>
+                                        <i class="bi bi-plugin"></i> Plugin
+                                    </option>
+                                    <option value="website" {{ old('type', $product->type) == 'website' ? 'selected' : '' }}>
+                                        Website
+                                    </option>
+                                    <option value="addon" {{ old('type', $product->type) == 'addon' ? 'selected' : '' }}>
+                                        Addon
+                                    </option>
+                                </select>
+                                @error('type')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <!-- Version -->
+                            <div class="col-md-6">
+                                <label for="version" class="form-label fw-semibold">
+                                    Version <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" 
+                                       class="form-control @error('version') is-invalid @enderror" 
+                                       id="version" 
+                                       name="version" 
+                                       value="{{ old('version', $product->version) }}" 
+                                       placeholder="e.g., 1.0.0"
+                                       required>
+                                @error('version')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <!-- Active Status -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold d-block">Status</label>
+                                <div class="form-check form-switch mt-2">
+                                    <input class="form-check-input" 
+                                           type="checkbox" 
+                                           id="is_active" 
+                                           name="is_active" 
+                                           value="1" 
+                                           {{ old('is_active', $product->is_active) ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="is_active">
+                                        Active (available for download)
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Description & Details -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white border-0 py-3">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="bi bi-file-text text-success me-2"></i> Description & Details
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <!-- Description -->
+                        <div class="mb-3">
+                            <label for="description" class="form-label fw-semibold">Description</label>
+                            <textarea class="form-control @error('description') is-invalid @enderror" 
+                                      id="description" 
+                                      name="description" 
+                                      rows="4" 
+                                      placeholder="Enter product description...">{{ old('description', $product->description) }}</textarea>
+                            @error('description')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <!-- Changelog -->
+                        <div class="mb-3">
+                            <label for="changelog" class="form-label fw-semibold">Changelog</label>
+                            <textarea class="form-control @error('changelog') is-invalid @enderror" 
+                                      id="changelog" 
+                                      name="changelog" 
+                                      rows="4" 
+                                      placeholder="What's new in this version...">{{ old('changelog', $product->changelog) }}</textarea>
+                            <small class="text-muted">List changes, improvements, and bug fixes</small>
+                            @error('changelog')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <!-- Requirements -->
+                        <div class="mb-0">
+                            <label for="requirements" class="form-label fw-semibold">Requirements</label>
+                            <textarea class="form-control @error('requirements') is-invalid @enderror" 
+                                      id="requirements" 
+                                      name="requirements" 
+                                      rows="3" 
+                                      placeholder="e.g., WordPress 5.0+, PHP 7.4+">{{ old('requirements', $product->requirements) }}</textarea>
+                            <small class="text-muted">System requirements for this product</small>
+                            @error('requirements')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- File Upload -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white border-0 py-3">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="bi bi-file-earmark-zip text-warning me-2"></i> Product File
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        @if($product->file_name)
+                        <!-- Current File Info -->
+                        <div class="alert alert-info mb-3">
+                            <div class="d-flex align-items-start">
+                                <i class="bi bi-file-earmark-zip fs-3 me-3"></i>
+                                <div class="flex-grow-1">
+                                    <div class="fw-semibold mb-1">Current File</div>
+                                    <div class="small">{{ $product->file_name }}</div>
+                                    <div class="small text-muted">{{ $product->formatted_file_size }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+
+                        <!-- Upload New File -->
+                        <div class="mb-0">
+                            <label for="file" class="form-label fw-semibold">
+                                Upload New File {{ $product->file_name ? '(Optional)' : '' }}
+                            </label>
+                            <input type="file" 
+                                   class="form-control @error('file') is-invalid @enderror" 
+                                   id="file" 
+                                   name="file" 
+                                   accept=".zip,.rar,.tar,.gz">
+                            <small class="text-muted d-block mt-1">
+                                Accepted: .zip, .rar, .tar, .gz (Max: 50MB)
+                            </small>
+                            @error('file')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product Stats -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-0 py-3">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="bi bi-graph-up text-info me-2"></i> Product Stats
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3 p-3 bg-light rounded">
+                            <div>
+                                <div class="text-muted small">Downloads</div>
+                                <div class="fw-bold fs-4">{{ $product->download_count ?? 0 }}</div>
+                            </div>
+                            <i class="bi bi-download fs-2 text-primary"></i>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded">
+                            <div>
+                                <div class="text-muted small">Created</div>
+                                <div class="fw-semibold">{{ $product->created_at->format('d M Y') }}</div>
+                            </div>
+                            <i class="bi bi-calendar fs-2 text-success"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Pricing Plans Section -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-0 py-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0 fw-bold">
+                                <i class="bi bi-tag text-success me-2"></i> Pricing Plans
+                            </h5>
+                            <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2">
+                                {{ $product->plans->count() }} {{ $product->plans->count() === 1 ? 'Plan' : 'Plans' }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="card-body p-4">
+                        @if($product->plans->count() > 0)
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Plan Name</th>
+                                        <th>Price</th>
+                                        <th>Max Domains</th>
+                                        <th>Status</th>
+                                        <th class="text-center">Popular</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($product->plans as $plan)
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <i class="bi bi-box-seam text-primary fs-5 me-2"></i>
+                                                <span class="fw-semibold">{{ $plan->name }}</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="fw-bold text-success fs-5">${{ number_format($plan->price, 2) }}</span>
+                                        </td>
+                                        <td>
+                                            @if($plan->max_domains === -1)
+                                            <span class="badge bg-info px-3 py-2">
+                                                <i class="bi bi-infinity me-1"></i> Unlimited
+                                            </span>
+                                            @else
+                                            <span class="badge bg-secondary px-3 py-2">{{ $plan->max_domains }}</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if($plan->is_active)
+                                            <span class="badge bg-success px-3 py-2">
+                                                <i class="bi bi-check-circle me-1"></i> Active
+                                            </span>
+                                            @else
+                                            <span class="badge bg-secondary px-3 py-2">
+                                                <i class="bi bi-x-circle me-1"></i> Inactive
+                                            </span>
+                                            @endif
+                                        </td>
+                                        <td class="text-center">
+                                            @if($plan->is_popular)
+                                            <span class="badge bg-warning text-dark px-3 py-2">⭐ Popular</span>
+                                            @else
+                                            <span class="text-muted">-</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                        @else
+                        <div class="text-center py-5">
+                            <i class="bi bi-tag fs-1 text-muted mb-3 d-block"></i>
+                            <h6 class="text-muted mb-2">No Pricing Plans Yet</h6>
+                            <p class="text-muted small">Plans are managed separately in Plans section</p>
+                        </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Action Buttons -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-check-circle me-2"></i> Update Product
+                            </button>
+                            <a href="{{ route('admin.products.index') }}" class="btn btn-outline-secondary btn-lg">
+                                <i class="bi bi-x-circle me-2"></i> Cancel
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+@endsection
