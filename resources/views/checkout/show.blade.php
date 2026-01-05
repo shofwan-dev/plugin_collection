@@ -124,15 +124,13 @@
                 priceId: '{{ $product->paddle_price_id }}',
                 quantity: 1
             }],
-            // Remove customer object to make email editable
-            // customer: {
-            //     email: customerEmail,
-            // },
+            customer: {
+                email: customerEmail, // Pre-fill email but still editable
+            },
             customData: {
                 product_id: {{ $product->id }},
                 user_id: {{ auth()->id() }},
                 customer_name: customerName,
-                customer_email: customerEmail, // Save in customData instead
                 whatsapp_number: whatsappNumber
             },
             settings: {
