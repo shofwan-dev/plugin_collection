@@ -81,45 +81,18 @@
 @paddleJS
 
 <script>
-    // Form validation and data saving before Paddle checkout
+    // Simple form validation only
     document.addEventListener('DOMContentLoaded', function() {
         const whatsappInput = document.getElementById('whatsapp_number');
-        const customerNameInput = document.getElementById('customer_name');
-        const emailInput = document.getElementById('email');
-        const paddleButton = document.querySelector('.paddle_button');
         
-        // Simple validation for WhatsApp number
+        // Format WhatsApp number (numeric only)
         if (whatsappInput) {
             whatsappInput.addEventListener('input', function() {
-                // Remove non-numeric characters
                 this.value = this.value.replace(/[^0-9]/g, '');
             });
         }
         
-        // Before Paddle opens, save data to session
-        if (paddleButton) {
-            paddleButton.addEventListener('click', function(e) {
-                // Save to session via AJAX
-                const formData = {
-                    whatsapp_number: whatsappInput.value,
-                    customer_name: customerNameInput.value,
-                    customer_email: emailInput.value,
-                    _token: document.querySelector('meta[name="csrf-token"]').content
-                };
-                
-                // Send to server to save in session
-                fetch('{{ route("checkout.save-data") }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': formData._token
-                    },
-                    body: JSON.stringify(formData)
-                }).catch(err => console.error('Error saving checkout data:', err));
-            });
-        }
-        
-        console.log('Checkout page loaded. Paddle will handle payment processing.');
+        console.log('Checkout ready. Paddle will process payment.');
     });
 </script>
 @endpush
