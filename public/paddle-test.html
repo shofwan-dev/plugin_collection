@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Paddle Test - Minimal</title>
+    <script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
+</head>
+
+<body>
+    <h1>Paddle Checkout Test</h1>
+    <button id="test-button">Test Paddle Checkout</button>
+
+    <script>
+        // GANTI INI DENGAN DATA ANDA
+        const PADDLE_TOKEN = 'test_xxxxxxxxxxxxx'; // Dari .env PADDLE_CLIENT_TOKEN
+        const PRICE_ID = 'pri_01xxxxxxxxxxxxx'; // Dari database
+
+        // Initialize Paddle
+        Paddle.Initialize({
+            environment: 'sandbox',
+            token: PADDLE_TOKEN
+        });
+
+        // Test button
+        document.getElementById('test-button').addEventListener('click', function () {
+            console.log('Opening Paddle with Price ID:', PRICE_ID);
+
+            Paddle.Checkout.open({
+                items: [{
+                    priceId: PRICE_ID,
+                    quantity: 1
+                }],
+                settings: {
+                    displayMode: 'overlay'
+                }
+            }).then((result) => {
+                console.log('SUCCESS:', result);
+            }).catch((error) => {
+                console.error('ERROR:', error);
+                alert('Error: ' + JSON.stringify(error));
+            });
+        });
+
+        console.log('Paddle initialized. Click button to test.');
+    </script>
+</body>
+
+</html>

@@ -1,108 +1,165 @@
 @extends('layouts.public')
 
-@section('title', 'Thank You - Purchase Complete')
+@section('title', 'Payment Successful!')
 
 @section('content')
-<section class="py-20">
-    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-8">
-            <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                </svg>
-            </div>
-            <h1 class="text-4xl font-bold mb-4">Thank You for Your Purchase!</h1>
-            <p class="text-xl text-gray-600">Your order has been successfully processed</p>
-        </div>
+<section class="py-5 bg-light min-vh-100 d-flex align-items-center">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <!-- Success Icon -->
+                <div class="text-center mb-5 animate-fadeInUp">
+                    <div class="success-icon mx-auto mb-4">
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                    </div>
+                    <h1 class="display-4 fw-bold mb-3">Payment Successful!</h1>
+                    <p class="lead text-muted">Thank you for your purchase. Your order has been processed successfully.</p>
+                </div>
 
-        @if($order && $order->license)
-        <div class="card mb-8">
-            <h2 class="text-2xl font-semibold mb-4">Your License Key</h2>
-            <div class="bg-gray-50 rounded-lg p-6 mb-4">
-                <div class="flex items-center justify-between">
-                    <code class="text-2xl font-mono font-bold text-primary-600">{{ $order->license->license_key }}</code>
-                    <button onclick="copyLicense()" class="btn btn-secondary">
-                        <svg class="w-5 h-5 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
-                        </svg>
-                        Copy
-                    </button>
+                @if($order && $order->license)
+                <!-- License Key Card -->
+                <div class="card border-0 shadow-lg mb-4 animate-fadeInUp" style="animation-delay: 0.2s;">
+                    <div class="card-body p-5">
+                        <h3 class="fw-bold mb-4">
+                            <i class="bi bi-key-fill text-primary me-2"></i>
+                            Your License Key
+                        </h3>
+                        
+                        <div class="alert alert-primary d-flex align-items-center mb-4">
+                            <i class="bi bi-info-circle-fill me-3 fs-4"></i>
+                            <div>
+                                <strong>Important:</strong> Save this license key. You'll need it to activate the plugin.
+                            </div>
+                        </div>
+
+                        <div class="license-key-box p-4 bg-light rounded-3 mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <code class="fs-4 fw-bold text-primary mb-0" id="license-key">{{ $order->license->license_key }}</code>
+                                <button onclick="copyLicense()" class="btn btn-outline-primary">
+                                    <i class="bi bi-clipboard me-2"></i>Copy
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endif
+
+                <!-- Next Steps -->
+                <div class="card border-0 shadow-lg mb-4 animate-fadeInUp" style="animation-delay: 0.4s;">
+                    <div class="card-body p-5">
+                        <h3 class="fw-bold mb-4">
+                            <i class="bi bi-list-check text-success me-2"></i>
+                            Next Steps
+                        </h3>
+                        
+                        <div class="steps">
+                            <div class="step-item d-flex mb-4">
+                                <div class="step-number">
+                                    <span class="badge bg-primary rounded-circle" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">1</span>
+                                </div>
+                                <div class="step-content ms-3 flex-grow-1">
+                                    <h5 class="fw-bold mb-2">Check Your Email</h5>
+                                    <p class="text-muted mb-2">We've sent your license key and download link to <strong>{{ $order->customer_email ?? auth()->user()->email }}</strong></p>
+                                </div>
+                            </div>
+
+                            <div class="step-item d-flex mb-4">
+                                <div class="step-number">
+                                    <span class="badge bg-primary rounded-circle" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">2</span>
+                                </div>
+                                <div class="step-content ms-3 flex-grow-1">
+                                    <h5 class="fw-bold mb-2">Download the Plugin</h5>
+                                    <p class="text-muted mb-2">Download the latest version from your dashboard</p>
+                                    <a href="{{ route('dashboard') }}" class="btn btn-primary">
+                                        <i class="bi bi-download me-2"></i>Go to Dashboard
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div class="step-item d-flex mb-4">
+                                <div class="step-number">
+                                    <span class="badge bg-primary rounded-circle" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">3</span>
+                                </div>
+                                <div class="step-content ms-3 flex-grow-1">
+                                    <h5 class="fw-bold mb-2">Install & Activate</h5>
+                                    <p class="text-muted mb-0">Upload the plugin to your WordPress site and enter your license key</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Support Card -->
+                <div class="card border-0 shadow-lg bg-gradient text-white animate-fadeInUp" style="animation-delay: 0.6s; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <div class="card-body p-4 text-center">
+                        <h5 class="fw-bold mb-3">Need Help?</h5>
+                        <p class="mb-3">Our support team is here to help you get started</p>
+                        <div class="d-flex gap-3 justify-content-center">
+                            <a href="{{ route('documentation') }}" class="btn btn-light">
+                                <i class="bi bi-book me-2"></i>Documentation
+                            </a>
+                            <a href="{{ route('contact') }}" class="btn btn-outline-light">
+                                <i class="bi bi-headset me-2"></i>Contact Support
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <p class="text-gray-600">
-                <strong>Important:</strong> Save this license key in a safe place. You'll need it to activate the plugin on your website.
-            </p>
-        </div>
-        @endif
-
-        <div class="card mb-8">
-            <h2 class="text-2xl font-semibold mb-4">Next Steps</h2>
-            <ol class="space-y-4">
-                <li class="flex items-start">
-                    <span class="flex-shrink-0 w-8 h-8 bg-primary-600 text-white rounded-full flex items-center justify-center mr-3 font-semibold">1</span>
-                    <div>
-                        <h3 class="font-semibold mb-1">Download the Plugin</h3>
-                        <p class="text-gray-600 mb-2">Download the latest version of CF7 to WhatsApp plugin</p>
-                        <a href="#" class="btn btn-primary">
-                            <svg class="w-5 h-5 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-                            </svg>
-                            Download Plugin
-                        </a>
-                    </div>
-                </li>
-                <li class="flex items-start">
-                    <span class="flex-shrink-0 w-8 h-8 bg-primary-600 text-white rounded-full flex items-center justify-center mr-3 font-semibold">2</span>
-                    <div>
-                        <h3 class="font-semibold mb-1">Install & Activate</h3>
-                        <p class="text-gray-600">Upload the plugin to your WordPress site and activate it</p>
-                    </div>
-                </li>
-                <li class="flex items-start">
-                    <span class="flex-shrink-0 w-8 h-8 bg-primary-600 text-white rounded-full flex items-center justify-center mr-3 font-semibold">3</span>
-                    <div>
-                        <h3 class="font-semibold mb-1">Enter License Key</h3>
-                        <p class="text-gray-600">Go to CF7 to WhatsApp → License and enter your license key</p>
-                    </div>
-                </li>
-                <li class="flex items-start">
-                    <span class="flex-shrink-0 w-8 h-8 bg-primary-600 text-white rounded-full flex items-center justify-center mr-3 font-semibold">4</span>
-                    <div>
-                        <h3 class="font-semibold mb-1">Configure Settings</h3>
-                        <p class="text-gray-600">Set up your WhatsApp API credentials and message templates</p>
-                    </div>
-                </li>
-            </ol>
-        </div>
-
-        <div class="card bg-blue-50 border border-blue-200">
-            <div class="flex items-start">
-                <svg class="w-6 h-6 text-blue-600 mr-3 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                <div>
-                    <h3 class="font-semibold text-blue-900 mb-2">Email Confirmation Sent</h3>
-                    <p class="text-blue-800">
-                        We've sent a confirmation email to <strong>{{ $order->customer_email ?? 'your email' }}</strong> with your license key and download link.
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <div class="text-center mt-8">
-            <a href="{{ route('documentation') }}" class="text-primary-600 hover:text-primary-700 font-semibold">
-                View Documentation →
-            </a>
         </div>
     </div>
 </section>
 
+<style>
+.success-icon i {
+    font-size: 8rem;
+    animation: scaleIn 0.5s ease-out;
+}
+
+@keyframes scaleIn {
+    0% { transform: scale(0); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.license-key-box {
+    border: 2px dashed #667eea;
+}
+
+.step-item {
+    position: relative;
+    padding-bottom: 1rem;
+}
+
+.step-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 19px;
+    top: 45px;
+    bottom: -15px;
+    width: 2px;
+    background: #e9ecef;
+}
+</style>
+
 @push('scripts')
 <script>
 function copyLicense() {
-    const licenseKey = '{{ $order->license->license_key ?? '' }}';
+    const licenseKey = document.getElementById('license-key').textContent;
     navigator.clipboard.writeText(licenseKey).then(() => {
-        alert('License key copied to clipboard!');
+        // Show success message
+        const btn = event.target.closest('button');
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = '<i class="bi bi-check2 me-2"></i>Copied!';
+        btn.classList.remove('btn-outline-primary');
+        btn.classList.add('btn-success');
+        
+        setTimeout(() => {
+            btn.innerHTML = originalHTML;
+            btn.classList.remove('btn-success');
+            btn.classList.add('btn-outline-primary');
+        }, 2000);
+    }).catch(err => {
+        alert('Failed to copy. Please copy manually.');
     });
 }
 </script>
