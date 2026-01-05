@@ -4,210 +4,312 @@
 @section('page-title', 'Add New Product')
 
 @section('content')
-<div class="row justify-content-center">
-    <div class="col-xl-10">
-        <form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data">
-            @csrf
-
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-white py-3">
-                    <h5 class="mb-0 fw-bold"><i class="bi bi-info-circle me-2"></i>General Information</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row g-3">
-                        <div class="col-md-7">
-                            <label class="form-label fw-semibold">Product Name <span class="text-danger">*</span></label>
-                            <input type="text" name="name" value="{{ old('name') }}" required
-                                class="form-control @error('name') is-invalid @enderror" placeholder="e.g. CF7 to WhatsApp Gateway">
-                            @error('name')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="col-md-5">
-                            <label class="form-label fw-semibold">Type <span class="text-danger">*</span></label>
-                            <select name="type" required class="form-select @error('type') is-invalid @enderror">
-                                <option value="plugin" {{ old('type') == 'plugin' ? 'selected' : '' }}>Plugin</option>
-                                <option value="website" {{ old('type') == 'website' ? 'selected' : '' }}>Website</option>
-                                <option value="addon" {{ old('type') == 'addon' ? 'selected' : '' }}>Addon</option>
-                            </select>
-                            @error('type')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold">Version <span class="text-danger">*</span></label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-tag"></i></span>
-                                <input type="text" name="version" value="{{ old('version', '1.0.0') }}" required
-                                    class="form-control @error('version') is-invalid @enderror" placeholder="1.0.0">
-                            </div>
-                            @error('version')
-                                <div class="invalid-feedback d-block">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="col-md-12">
-                            <label class="form-label fw-semibold">Description</label>
-                            <textarea name="description" rows="3"
-                                class="form-control @error('description') is-invalid @enderror" 
-                                placeholder="Short summary about the product...">{{ old('description') }}</textarea>
-                            @error('description')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
-                </div>
+<div class="container-fluid px-4 py-4">
+    <!-- Header -->
+    <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="mb-1 fw-bold">
+                    <i class="bi bi-plus-square text-primary me-2"></i> Add New Product
+                </h2>
+                <p class="text-muted mb-0">Create a new product, plugin, or website asset.</p>
             </div>
+            <a href="{{ route('admin.products.index') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i> Back to Products
+            </a>
+        </div>
+    </div>
 
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="card border-0 shadow-sm mb-4">
-                        <div class="card-header bg-white py-3">
-                            <h5 class="mb-0 fw-bold"><i class="bi bi-currency-dollar me-2"></i>Pricing & Licensing</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Price ($) <span class="text-danger">*</span></label>
+    <form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data">
+        @csrf
+
+        <div class="row g-4">
+            <!-- Main Content (Left) -->
+            <div class="col-lg-8">
+                <!-- Basic Information -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white border-0 py-3">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="bi bi-info-circle text-primary me-2"></i> Basic Information
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row g-3">
+                            <!-- Product Name -->
+                            <div class="col-md-7">
+                                <label for="name" class="form-label fw-semibold">
+                                    Product Name <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" 
+                                       class="form-control @error('name') is-invalid @enderror" 
+                                       id="name" 
+                                       name="name" 
+                                       value="{{ old('name') }}" 
+                                       placeholder="e.g. CF7 to WhatsApp Gateway"
+                                       required>
+                                @error('name')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <!-- Type -->
+                            <div class="col-md-5">
+                                <label for="type" class="form-label fw-semibold">
+                                    Type <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select @error('type') is-invalid @enderror" 
+                                        id="type" 
+                                        name="type" 
+                                        required>
+                                    <option value="plugin" {{ old('type') == 'plugin' ? 'selected' : '' }}>Plugin</option>
+                                    <option value="website" {{ old('type') == 'website' ? 'selected' : '' }}>Website</option>
+                                    <option value="addon" {{ old('type') == 'addon' ? 'selected' : '' }}>Addon</option>
+                                </select>
+                                @error('type')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <!-- Version -->
+                            <div class="col-md-4">
+                                <label for="version" class="form-label fw-semibold">
+                                    Version <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-tag"></i></span>
+                                    <input type="text" 
+                                           class="form-control @error('version') is-invalid @enderror" 
+                                           id="version" 
+                                           name="version" 
+                                           value="{{ old('version', '1.0.0') }}" 
+                                           placeholder="1.0.0"
+                                           required>
+                                </div>
+                                @error('version')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <!-- Price -->
+                            <div class="col-md-4">
+                                <label for="price" class="form-label fw-semibold">
+                                    Price (USD) <span class="text-danger">*</span>
+                                </label>
                                 <div class="input-group">
                                     <span class="input-group-text">$</span>
-                                    <input type="number" name="price" value="{{ old('price', '0.00') }}" step="0.01" required
-                                        class="form-control @error('price') is-invalid @enderror">
+                                    <input type="number" 
+                                           class="form-control @error('price') is-invalid @enderror" 
+                                           id="price" 
+                                           name="price" 
+                                           value="{{ old('price', '0.00') }}" 
+                                           placeholder="0.00"
+                                           step="0.01"
+                                           min="0"
+                                           required>
                                 </div>
                                 @error('price')
-                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
                             </div>
 
-                            <div class="mb-0">
-                                <label class="form-label fw-semibold">Max Domains <span class="text-danger">*</span></label>
+                            <!-- Max Domains -->
+                            <div class="col-md-4">
+                                <label for="max_domains" class="form-label fw-semibold">
+                                    Max Domains <span class="text-danger">*</span>
+                                </label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="bi bi-globe"></i></span>
-                                    <input type="number" name="max_domains" value="{{ old('max_domains', '1') }}" required
-                                        class="form-control @error('max_domains') is-invalid @enderror">
+                                    <input type="number" 
+                                           class="form-control @error('max_domains') is-invalid @enderror" 
+                                           id="max_domains" 
+                                           name="max_domains" 
+                                           value="{{ old('max_domains', '1') }}" 
+                                           min="-1"
+                                           required>
                                 </div>
-                                <small class="text-muted">Use -1 for unlimited domains</small>
                                 @error('max_domains')
-                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
+                                <small class="text-muted">Use -1 for unlimited</small>
                             </div>
-                        </div>
-                    </div>
-                </div>
 
-                <div class="col-md-6">
-                    <div class="card border-0 shadow-sm mb-4">
-                        <div class="card-header bg-white py-3">
-                            <h5 class="mb-0 fw-bold"><i class="bi bi-credit-card me-2"></i>Paddle Integration</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Paddle Price ID</label>
-                                <input type="text" name="paddle_price_id" value="{{ old('paddle_price_id') }}"
-                                    placeholder="pri_..."
-                                    class="form-control font-monospace @error('paddle_price_id') is-invalid @enderror">
+                            <!-- Paddle Price ID -->
+                            <div class="col-md-6">
+                                <label for="paddle_price_id" class="form-label fw-semibold">
+                                    Paddle Price ID
+                                </label>
+                                <input type="text" 
+                                       class="form-control font-monospace @error('paddle_price_id') is-invalid @enderror" 
+                                       id="paddle_price_id" 
+                                       name="paddle_price_id" 
+                                       value="{{ old('paddle_price_id') }}" 
+                                       placeholder="pri_...">
                                 @error('paddle_price_id')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
 
-                            <div class="mb-0">
-                                <label class="form-label fw-semibold">Paddle Product ID</label>
-                                <input type="text" name="paddle_product_id" value="{{ old('paddle_product_id') }}"
-                                    placeholder="pro_..."
-                                    class="form-control font-monospace @error('paddle_product_id') is-invalid @enderror">
+                            <!-- Paddle Product ID -->
+                            <div class="col-md-6">
+                                <label for="paddle_product_id" class="form-label fw-semibold">
+                                    Paddle Product ID
+                                </label>
+                                <input type="text" 
+                                       class="form-control font-monospace @error('paddle_product_id') is-invalid @enderror" 
+                                       id="paddle_product_id" 
+                                       name="paddle_product_id" 
+                                       value="{{ old('paddle_product_id') }}" 
+                                       placeholder="pro_...">
                                 @error('paddle_product_id')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Description & Details -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white border-0 py-3">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="bi bi-file-text text-success me-2"></i> Description & Details
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="mb-3">
+                            <label for="description" class="form-label fw-semibold">Short Description</label>
+                            <textarea class="form-control @error('description') is-invalid @enderror" 
+                                      id="description" 
+                                      name="description" 
+                                      rows="3" 
+                                      placeholder="Summary of the product...">{{ old('description') }}</textarea>
+                            @error('description')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="changelog" class="form-label fw-semibold">Changelog</label>
+                                <textarea class="form-control @error('changelog') is-invalid @enderror" 
+                                          id="changelog" 
+                                          name="changelog" 
+                                          rows="5" 
+                                          placeholder="- Initial release&#10;- Bug fixes...">{{ old('changelog') }}</textarea>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="requirements" class="form-label fw-semibold">Requirements</label>
+                                <textarea class="form-control @error('requirements') is-invalid @enderror" 
+                                          id="requirements" 
+                                          name="requirements" 
+                                          rows="5" 
+                                          placeholder="e.g. WordPress 5.0+, PHP 7.4+">{{ old('requirements') }}</textarea>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-white py-3">
-                    <h5 class="mb-0 fw-bold"><i class="bi bi-file-earmark-zip me-2"></i>Product Files & Assets</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Select File <span class="text-danger">*</span></label>
-                            <input type="file" name="file" required accept=".zip,.rar,.tar,.gz"
-                                class="form-control @error('file') is-invalid @enderror">
-                            <small class="text-muted">Max file size: 50MB (.zip, .rar, .tar, .gz)</small>
-                            @error('file')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Product Image/Thumbnail</label>
-                            <input type="file" name="image" accept="image/*"
-                                class="form-control @error('image') is-invalid @enderror"
-                                onchange="previewImage(this, 'productImagePreview')">
-                            <small class="text-muted">Recommended: 800x600px (JPG, PNG, WEBP)</small>
-                            @error('image')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                            <div id="productImagePreview" class="mt-3"></div>
-                        </div>
+            <!-- Sidebar (Right) -->
+            <div class="col-lg-4">
+                <!-- File Upload -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white border-0 py-3">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="bi bi-file-earmark-zip text-warning me-2"></i> Product File
+                        </h5>
                     </div>
-                </div>
-            </div>
-
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-white py-3">
-                    <h5 class="mb-0 fw-bold"><i class="bi bi-journal-text me-2"></i>Release Notes & Details</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Changelog</label>
-                            <textarea name="changelog" rows="5" placeholder="- New feature added&#10;- Bug fixes&#10;- Performance improvements"
-                                class="form-control @error('changelog') is-invalid @enderror">{{ old('changelog') }}</textarea>
-                            @error('changelog')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Requirements</label>
-                            <textarea name="requirements" rows="5" placeholder="e.g. &#10;WordPress 5.0+&#10;PHP 7.4+&#10;Contact Form 7 5.0+"
-                                class="form-control @error('requirements') is-invalid @enderror">{{ old('requirements') }}</textarea>
-                            @error('requirements')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
-
-                    <div class="mt-4">
-                        <div class="form-check form-switch px-md-5">
-                            <input class="form-check-input scale-150" type="checkbox" name="is_active" id="is_active" value="1" {{ old('is_active', true) ? 'checked' : '' }}>
-                            <label class="form-check-label ms-3 fw-medium" for="is_active">
-                                Product Status: Active (Available for purchase and download)
+                    <div class="card-body p-4">
+                        <div class="mb-0">
+                            <label for="file" class="form-label fw-semibold">
+                                Select File <span class="text-danger">*</span>
                             </label>
+                            <input type="file" 
+                                   class="form-control @error('file') is-invalid @enderror" 
+                                   id="file" 
+                                   name="file" 
+                                   accept=".zip,.rar,.tar,.gz"
+                                   required>
+                            <small class="text-muted d-block mt-2">
+                                <i class="bi bi-info-circle me-1"></i> Max size: 50MB (.zip, .rar, .tar, .gz)
+                            </small>
+                            @error('file')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product Image -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white border-0 py-3">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="bi bi-image text-info me-2"></i> Product Image
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="mb-3">
+                            <label for="image" class="form-label fw-semibold">Upload Image</label>
+                            <input type="file" 
+                                   class="form-control @error('image') is-invalid @enderror" 
+                                   id="image" 
+                                   name="image" 
+                                   accept="image/*"
+                                   onchange="previewImage(this, 'productImagePreview')">
+                            @error('image')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div id="productImagePreview"></div>
+                    </div>
+                </div>
+
+                <!-- Status -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white border-0 py-3">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="bi bi-toggle-on text-primary me-2"></i> Publishing
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="form-check form-switch card-p-3 bg-light rounded border p-3">
+                            <input class="form-check-input ms-0 me-2 mt-1" 
+                                   type="checkbox" 
+                                   id="is_active" 
+                                   name="is_active" 
+                                   value="1" 
+                                   {{ old('is_active', true) ? 'checked' : '' }}>
+                            <label class="form-check-label fw-semibold" for="is_active">
+                                Active Product
+                            </label>
+                            <p class="small text-muted mb-0 mt-1">Visible and available for purchase.</p>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Dynamic Content -->
-            <div class="row mt-4">
-                <div class="col-12">
-                    @include('admin.products._dynamic_content')
+        <!-- Dynamic Content (Benefits, Testimonials, SEO) -->
+        <div class="row mt-2">
+            <div class="col-12">
+                @include('admin.products._dynamic_content')
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="card border-0 shadow-sm mt-4 mb-5">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <button type="button" onclick="window.history.back()" class="btn btn-light border px-4">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary btn-lg px-5">
+                        <i class="bi bi-cloud-arrow-up me-2"></i> Create Product
+                    </button>
                 </div>
             </div>
-
-            <div class="d-flex justify-content-between align-items-center mb-5 mt-4">
-                <a href="{{ route('admin.products.index') }}" class="btn btn-light px-4 border">
-                    <i class="bi bi-arrow-left me-2"></i>Back to List
-                </a>
-                <button type="submit" class="btn btn-primary px-5 py-2 fw-bold shadow-sm">
-                    <i class="bi bi-cloud-arrow-up me-2"></i>Create Product
-                </button>
-            </div>
-        </form>
-    </div>
+        </div>
+    </form>
 </div>
 
 @push('scripts')
@@ -222,20 +324,15 @@
             
             reader.onload = function(e) {
                 const div = document.createElement('div');
-                div.className = 'border rounded p-3 bg-light';
-                
-                const label = document.createElement('p');
-                label.className = 'text-primary small mb-2 fw-semibold';
-                label.textContent = 'Preview:';
+                div.className = 'border rounded p-2 bg-light mt-2';
                 
                 const img = document.createElement('img');
                 img.src = e.target.result;
                 img.className = 'img-fluid rounded';
-                img.style.maxHeight = '200px';
+                img.style.maxHeight = '250px';
+                img.style.width = '100%';
                 img.style.objectFit = 'cover';
-                img.alt = 'Preview';
                 
-                div.appendChild(label);
                 div.appendChild(img);
                 preview.appendChild(div);
             }
@@ -244,104 +341,99 @@
         }
     }
 
-    // Benefits Management
+    // Dynamic Index Counters
     let benefitIndex = 0;
+    let testimonialIndex = 0;
+
     function addBenefit() {
         const container = document.getElementById('benefits-container');
-        const benefitHtml = `
+        const html = `
             <div class="benefit-item border rounded p-3 mb-3" data-index="${benefitIndex}">
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                    <strong>Benefit #${benefitIndex + 1}</strong>
-                    <button type="button" class="btn btn-sm btn-danger" onclick="removeBenefit(this)">
+                    <span class="badge bg-primary">Benefit #${benefitIndex + 1}</span>
+                    <button type="button" class="btn btn-sm btn-outline-danger border-0" onclick="removeBenefit(this)">
                         <i class="bi bi-trash"></i>
                     </button>
                 </div>
                 <div class="row g-2">
                     <div class="col-md-6">
-                        <label class="form-label small">Title</label>
-                        <input type="text" class="form-control" name="benefits[${benefitIndex}][title]" placeholder="e.g., Instant Setup">
+                        <label class="form-label small fw-bold">Title</label>
+                        <input type="text" class="form-control form-control-sm" name="benefits[${benefitIndex}][title]" placeholder="e.g. Fast Integration">
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label small">Icon (Bootstrap Icon)</label>
-                        <input type="text" class="form-control" name="benefits[${benefitIndex}][icon]" value="check-circle-fill" placeholder="e.g., rocket-takeoff-fill">
+                        <label class="form-label small fw-bold">Icon (Bootstrap Icon)</label>
+                        <input type="text" class="form-control form-control-sm" name="benefits[${benefitIndex}][icon]" value="check-circle-fill">
                     </div>
                     <div class="col-12">
-                        <label class="form-label small">Description</label>
-                        <textarea class="form-control" name="benefits[${benefitIndex}][description]" rows="2" placeholder="Describe this benefit..."></textarea>
+                        <label class="form-label small fw-bold">Description</label>
+                        <textarea class="form-control form-control-sm" name="benefits[${benefitIndex}][description]" rows="2"></textarea>
                     </div>
                 </div>
             </div>
         `;
-        container.insertAdjacentHTML('beforeend', benefitHtml);
+        container.insertAdjacentHTML('beforeend', html);
         benefitIndex++;
     }
 
-    function removeBenefit(button) {
-        if (confirm('Remove this benefit?')) {
-            button.closest('.benefit-item').remove();
-        }
+    function removeBenefit(btn) {
+        if(confirm('Remove this benefit?')) btn.closest('.benefit-item').remove();
     }
 
-    // Testimonials Management
-    let testimonialIndex = 0;
     function addTestimonial() {
         const container = document.getElementById('testimonials-container');
-        const testimonialHtml = `
+        const html = `
             <div class="testimonial-item border rounded p-3 mb-3" data-index="${testimonialIndex}">
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                    <strong>Testimonial #${testimonialIndex + 1}</strong>
-                    <button type="button" class="btn btn-sm btn-danger" onclick="removeTestimonial(this)">
+                    <span class="badge bg-info text-dark">Testimonial #${testimonialIndex + 1}</span>
+                    <button type="button" class="btn btn-sm btn-outline-danger border-0" onclick="removeTestimonial(this)">
                         <i class="bi bi-trash"></i>
                     </button>
                 </div>
-                <div class="row g-2">
+                <div class="row g-3">
                     <div class="col-md-6">
-                        <label class="form-label small">Customer Name</label>
-                        <input type="text" class="form-control" name="testimonials[${testimonialIndex}][name]" placeholder="e.g., John Doe">
+                        <label class="form-label small fw-bold">Name</label>
+                        <input type="text" class="form-control form-control-sm" name="testimonials[${testimonialIndex}][name]">
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label small">Position/Company</label>
-                        <input type="text" class="form-control" name="testimonials[${testimonialIndex}][position]" placeholder="e.g., CEO at Company">
+                        <label class="form-label small fw-bold">Position</label>
+                        <input type="text" class="form-control form-control-sm" name="testimonials[${testimonialIndex}][position]">
                     </div>
                     <div class="col-md-12">
-                        <label class="form-label small">Rating (1-5)</label>
-                        <select class="form-select" name="testimonials[${testimonialIndex}][rating]">
-                            <option value="5" selected>5 Stars</option>
+                        <label class="form-label small fw-bold">Rating</label>
+                        <select class="form-select form-select-sm" name="testimonials[${testimonialIndex}][rating]">
+                            <option value="5">5 Stars</option>
                             <option value="4">4 Stars</option>
                             <option value="3">3 Stars</option>
-                            <option value="2">2 Stars</option>
-                            <option value="1">1 Star</option>
                         </select>
                     </div>
                     <div class="col-12">
-                        <label class="form-label small">Testimonial Content</label>
-                        <textarea class="form-control" name="testimonials[${testimonialIndex}][content]" rows="3" placeholder="What did the customer say..."></textarea>
+                        <label class="form-label small fw-bold">Content</label>
+                        <textarea class="form-control form-control-sm" name="testimonials[${testimonialIndex}][content]" rows="2"></textarea>
                     </div>
                 </div>
             </div>
         `;
-        container.insertAdjacentHTML('beforeend', testimonialHtml);
+        container.insertAdjacentHTML('beforeend', html);
         testimonialIndex++;
     }
 
-    function removeTestimonial(button) {
-        if (confirm('Remove this testimonial?')) {
-            button.closest('.testimonial-item').remove();
-        }
+    function removeTestimonial(btn) {
+        if(confirm('Remove this testimonial?')) btn.closest('.testimonial-item').remove();
     }
 </script>
 @endpush
 
 <style>
-    .scale-150 {
-        transform: scale(1.5);
+    .form-check-input:checked {
+        background-color: var(--primary);
+        border-color: var(--primary);
     }
-    .card {
-        transition: transform 0.2s ease;
+    .card-header h5 {
+        font-size: 1.1rem;
     }
-    .card:hover {
-        transform: translateY(-2px);
+    .font-monospace {
+        font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+        font-size: 0.875rem;
     }
 </style>
 @endsection
-
