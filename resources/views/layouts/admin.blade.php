@@ -244,7 +244,7 @@
         <!-- Sidebar -->
         <aside class="sidebar">
             <!-- Logo -->
-            <div class="sidebar-logo">
+            <a href="{{ route('home') }}" class="sidebar-logo text-decoration-none">
                 @php
                     $siteName = \App\Models\Setting::get('site_name', 'CF7 Admin');
                 @endphp
@@ -254,7 +254,7 @@
                     <i class="bi bi-whatsapp text-white" style="font-size: 2rem;"></i>
                 @endif
                 <h2>{{ Str::limit($siteName, 15) }}</h2>
-            </div>
+            </a>
 
             <!-- Navigation -->
             <nav class="sidebar-nav">
