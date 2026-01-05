@@ -289,10 +289,27 @@
             </div>
         </div>
 
-        <!-- Dynamic Content (Benefits, Testimonials, SEO) -->
+
+        <!-- SEO Meta Tags -->
         <div class="row mt-2">
             <div class="col-12">
-                @include('admin.products._dynamic_content')
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0 fw-bold"><i class="bi bi-search text-success me-2"></i>SEO Meta Tags</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Meta Title</label>
+                            <input type="text" name="meta_title" value="{{ old('meta_title') }}" class="form-control" placeholder="SEO optimized title" maxlength="60">
+                            <small class="text-muted">Recommended: 50-60 characters</small>
+                        </div>
+                        <div class="mb-0">
+                            <label class="form-label fw-semibold">Meta Description</label>
+                            <textarea name="meta_description" class="form-control" rows="3" placeholder="SEO optimized description" maxlength="160">{{ old('meta_description') }}</textarea>
+                            <small class="text-muted">Recommended: 150-160 characters</small>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -341,85 +358,6 @@
         }
     }
 
-    // Dynamic Index Counters
-    let benefitIndex = 0;
-    let testimonialIndex = 0;
-
-    function addBenefit() {
-        const container = document.getElementById('benefits-container');
-        const html = `
-            <div class="benefit-item border rounded p-3 mb-3" data-index="${benefitIndex}">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span class="badge bg-primary">Benefit #${benefitIndex + 1}</span>
-                    <button type="button" class="btn btn-sm btn-outline-danger border-0" onclick="removeBenefit(this)">
-                        <i class="bi bi-trash"></i>
-                    </button>
-                </div>
-                <div class="row g-2">
-                    <div class="col-md-6">
-                        <label class="form-label small fw-bold">Title</label>
-                        <input type="text" class="form-control form-control-sm" name="benefits[${benefitIndex}][title]" placeholder="e.g. Fast Integration">
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label small fw-bold">Icon (Bootstrap Icon)</label>
-                        <input type="text" class="form-control form-control-sm" name="benefits[${benefitIndex}][icon]" value="check-circle-fill">
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label small fw-bold">Description</label>
-                        <textarea class="form-control form-control-sm" name="benefits[${benefitIndex}][description]" rows="2"></textarea>
-                    </div>
-                </div>
-            </div>
-        `;
-        container.insertAdjacentHTML('beforeend', html);
-        benefitIndex++;
-    }
-
-    function removeBenefit(btn) {
-        if(confirm('Remove this benefit?')) btn.closest('.benefit-item').remove();
-    }
-
-    function addTestimonial() {
-        const container = document.getElementById('testimonials-container');
-        const html = `
-            <div class="testimonial-item border rounded p-3 mb-3" data-index="${testimonialIndex}">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span class="badge bg-info text-dark">Testimonial #${testimonialIndex + 1}</span>
-                    <button type="button" class="btn btn-sm btn-outline-danger border-0" onclick="removeTestimonial(this)">
-                        <i class="bi bi-trash"></i>
-                    </button>
-                </div>
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label small fw-bold">Name</label>
-                        <input type="text" class="form-control form-control-sm" name="testimonials[${testimonialIndex}][name]">
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label small fw-bold">Position</label>
-                        <input type="text" class="form-control form-control-sm" name="testimonials[${testimonialIndex}][position]">
-                    </div>
-                    <div class="col-md-12">
-                        <label class="form-label small fw-bold">Rating</label>
-                        <select class="form-select form-select-sm" name="testimonials[${testimonialIndex}][rating]">
-                            <option value="5">5 Stars</option>
-                            <option value="4">4 Stars</option>
-                            <option value="3">3 Stars</option>
-                        </select>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label small fw-bold">Content</label>
-                        <textarea class="form-control form-control-sm" name="testimonials[${testimonialIndex}][content]" rows="2"></textarea>
-                    </div>
-                </div>
-            </div>
-        `;
-        container.insertAdjacentHTML('beforeend', html);
-        testimonialIndex++;
-    }
-
-    function removeTestimonial(btn) {
-        if(confirm('Remove this testimonial?')) btn.closest('.testimonial-item').remove();
-    }
 </script>
 @endpush
 

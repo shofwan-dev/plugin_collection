@@ -18,11 +18,15 @@ class LandingPage extends Model
         'is_homepage',
         'meta_title',
         'meta_description',
+        'benefits',
+        'testimonials',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
         'is_homepage' => 'boolean',
+        'benefits' => 'array',
+        'testimonials' => 'array',
     ];
 
     /**

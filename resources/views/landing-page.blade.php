@@ -69,6 +69,83 @@
 </section>
 @endif
 
+<!-- Benefits Section -->
+@if($landingPage->benefits && count($landingPage->benefits) > 0)
+<section class="py-5 bg-light">
+    <div class="container py-5">
+        <div class="text-center mb-5">
+            <h2 class="display-4 fw-bold mb-3">Why Choose Us?</h2>
+            <p class="text-muted lead">Discover the benefits that set us apart</p>
+        </div>
+        
+        <div class="row g-4">
+            @foreach($landingPage->benefits as $index => $benefit)
+            <div class="col-lg-4 col-md-6">
+                <div class="card h-100 border-0 shadow-sm card-hover animate-fadeInUp" style="animation-delay: {{ $index * 0.1 }}s;">
+                    <div class="card-body p-4 text-center">
+                        <div class="benefit-icon mb-4">
+                            <div class="icon-wrapper d-inline-flex align-items-center justify-content-center rounded-circle bg-primary bg-opacity-10" style="width: 80px; height: 80px;">
+                                <i class="bi bi-{{ $benefit['icon'] ?? 'check-circle-fill' }} text-primary" style="font-size: 2.5rem;"></i>
+                            </div>
+                        </div>
+                        <h4 class="fw-bold mb-3">{{ $benefit['title'] ?? 'Benefit' }}</h4>
+                        <p class="text-muted mb-0">{{ $benefit['description'] ?? '' }}</p>
+                    </div>
+                </div>
+            </div>
+            @endforeach
+        </div>
+    </div>
+</section>
+@endif
+
+<!-- Testimonials Section -->
+@if($landingPage->testimonials && count($landingPage->testimonials) > 0)
+<section class="py-5 bg-white">
+    <div class="container py-5">
+        <div class="text-center mb-5">
+            <h2 class="display-4 fw-bold mb-3">What Our Customers Say</h2>
+            <p class="text-muted lead">Real feedback from real users</p>
+        </div>
+        
+        <div class="row g-4">
+            @foreach($landingPage->testimonials as $index => $testimonial)
+            <div class="col-lg-4 col-md-6">
+                <div class="card h-100 border-0 shadow-sm card-hover animate-fadeInUp" style="animation-delay: {{ $index * 0.1 }}s;">
+                    <div class="card-body p-4">
+                        <!-- Rating Stars -->
+                        <div class="mb-3">
+                            @for($i = 1; $i <= 5; $i++)
+                                @if($i <= ($testimonial['rating'] ?? 5))
+                                    <i class="bi bi-star-fill text-warning"></i>
+                                @else
+                                    <i class="bi bi-star text-muted"></i>
+                                @endif
+                            @endfor
+                        </div>
+                        
+                        <!-- Testimonial Content -->
+                        <p class="mb-4 fst-italic text-muted">"{{ $testimonial['content'] ?? '' }}"</p>
+                        
+                        <!-- Customer Info -->
+                        <div class="d-flex align-items-center">
+                            <div class="avatar-circle bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px; min-width: 50px;">
+                                <strong>{{ strtoupper(substr($testimonial['name'] ?? 'U', 0, 1)) }}</strong>
+                            </div>
+                            <div>
+                                <h6 class="mb-0 fw-bold">{{ $testimonial['name'] ?? 'Anonymous' }}</h6>
+                                <small class="text-muted">{{ $testimonial['position'] ?? 'Customer' }}</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endforeach
+        </div>
+    </div>
+</section>
+@endif
+
 <!-- Products/Pricing -->
 <section id="pricing" class="py-5 bg-light">
     <div class="container py-5">

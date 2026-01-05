@@ -82,6 +82,9 @@
                         <textarea name="content" class="form-control" rows="10">{{ old('content', $landingPage->content) }}</textarea>
                     </div>
                 </div>
+
+                <!-- Benefits & Testimonials -->
+                @include('admin.landing-pages._dynamic_content')
             </div>
 
             <div class="col-lg-4">
@@ -146,4 +149,96 @@
         </div>
     </form>
 </div>
+
+@push('scripts')
+<script>
+    // Benefits Management
+    let benefitIndex = {{ isset($landingPage) && $landingPage->benefits ? count($landingPage->benefits) : 0 }};
+    
+    function addBenefit() {
+        const container = document.getElementById('benefits-container');
+        const benefitHtml = `
+            <div class="benefit-item border rounded p-3 mb-3" data-index="${benefitIndex}">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <strong>Benefit #${benefitIndex + 1}</strong>
+                    <button type="button" class="btn btn-sm btn-danger" onclick="removeBenefit(this)">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+                <div class="row g-2">
+                    <div class="col-md-6">
+                        <label class="form-label small">Title</label>
+                        <input type="text" class="form-control" name="benefits[${benefitIndex}][title]" placeholder="e.g., Instant Setup">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small">Icon (Bootstrap Icon)</label>
+                        <input type="text" class="form-control" name="benefits[${benefitIndex}][icon]" value="check-circle-fill" placeholder="e.g., rocket-takeoff-fill">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small">Description</label>
+                        <textarea class="form-control" name="benefits[${benefitIndex}][description]" rows="2" placeholder="Describe this benefit..."></textarea>
+                    </div>
+                </div>
+            </div>
+        `;
+        container.insertAdjacentHTML('beforeend', benefitHtml);
+        benefitIndex++;
+    }
+
+    function removeBenefit(button) {
+        if (confirm('Remove this benefit?')) {
+            button.closest('.benefit-item').remove();
+        }
+    }
+
+    // Testimonials Management
+    let testimonialIndex = {{ isset($landingPage) && $landingPage->testimonials ? count($landingPage->testimonials) : 0 }};
+    
+    function addTestimonial() {
+        const container = document.getElementById('testimonials-container');
+        const testimonialHtml = `
+            <div class="testimonial-item border rounded p-3 mb-3" data-index="${testimonialIndex}">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <strong>Testimonial #${testimonialIndex + 1}</strong>
+                    <button type="button" class="btn btn-sm btn-danger" onclick="removeTestimonial(this)">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+                <div class="row g-2">
+                    <div class="col-md-6">
+                        <label class="form-label small">Customer Name</label>
+                        <input type="text" class="form-control" name="testimonials[${testimonialIndex}][name]" placeholder="e.g., John Doe">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small">Position/Company</label>
+                        <input type="text" class="form-control" name="testimonials[${testimonialIndex}][position]" placeholder="e.g., CEO at Company">
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label small">Rating (1-5)</label>
+                        <select class="form-select" name="testimonials[${testimonialIndex}][rating]">
+                            <option value="5" selected>5 Stars</option>
+                            <option value="4">4 Stars</option>
+                            <option value="3">3 Stars</option>
+                            <option value="2">2 Stars</option>
+                            <option value="1">1 Star</option>
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small">Testimonial Content</label>
+                        <textarea class="form-control" name="testimonials[${testimonialIndex}][content]" rows="3" placeholder="What did the customer say..."></textarea>
+                    </div>
+                </div>
+            </div>
+        `;
+        container.insertAdjacentHTML('beforeend', testimonialHtml);
+        testimonialIndex++;
+    }
+
+    function removeTestimonial(button) {
+        if (confirm('Remove this testimonial?')) {
+            button.closest('.testimonial-item').remove();
+        }
+    }
+</script>
+@endpush
 @endsection

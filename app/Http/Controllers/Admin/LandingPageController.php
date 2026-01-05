@@ -37,6 +37,8 @@ class LandingPageController extends Controller
             'meta_description' => 'nullable|string',
             'product_ids' => 'nullable|array',
             'product_ids.*' => 'exists:products,id',
+            'benefits' => 'nullable|array',
+            'testimonials' => 'nullable|array',
         ]);
 
         if ($request->hasFile('hero_image')) {
@@ -84,6 +86,8 @@ class LandingPageController extends Controller
             'meta_description' => 'nullable|string',
             'product_ids' => 'nullable|array',
             'product_ids.*' => 'exists:products,id',
+            'benefits' => 'nullable|array',
+            'testimonials' => 'nullable|array',
         ]);
 
         if ($request->hasFile('hero_image')) {

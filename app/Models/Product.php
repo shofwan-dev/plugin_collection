@@ -27,8 +27,6 @@ class Product extends Model
         'paddle_price_id',
         'paddle_product_id',
         'max_domains',
-        'benefits',
-        'testimonials',
         'meta_title',
         'meta_description',
     ];
@@ -38,8 +36,6 @@ class Product extends Model
         'file_size' => 'integer',
         'price' => 'decimal:2',
         'max_domains' => 'integer',
-        'benefits' => 'array',
-        'testimonials' => 'array',
     ];
 
     /**
