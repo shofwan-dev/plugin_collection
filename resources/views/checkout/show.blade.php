@@ -77,23 +77,79 @@
 @endpush
 
 @push('scripts')
-<!-- Paddle.js from Cashier -->
-@paddleJS
+<!-- Paddle.js -->
+<script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
 
 <script>
-    // Simple form validation only
-    document.addEventListener('DOMContentLoaded', function() {
-        const whatsappInput = document.getElementById('whatsapp_number');
+    // Initialize Paddle
+    const paddleConfig = {
+        environment: '{{ config("cashier.sandbox") ? "sandbox" : "production" }}',
+        token: '{{ config("cashier.client_token") }}',
+    };
+    
+    console.log('Initializing Paddle with config:', paddleConfig);
+    
+    Paddle.Initialize(paddleConfig);
+    
+    // Form validation
+    const whatsappInput = document.getElementById('whatsapp_number');
+    if (whatsappInput) {
+        whatsappInput.addEventListener('input', function() {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+    }
+    
+    // Checkout button handler
+    document.getElementById('checkout-button').addEventListener('click', function() {
+        const button = this;
+        button.disabled = true;
+        button.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Loading...';
         
-        // Format WhatsApp number (numeric only)
-        if (whatsappInput) {
-            whatsappInput.addEventListener('input', function() {
-                this.value = this.value.replace(/[^0-9]/g, '');
-            });
+        // Get form data
+        const customerEmail = document.getElementById('email').value;
+        const customerName = document.getElementById('customer_name').value;
+        const whatsappNumber = document.getElementById('whatsapp_number').value;
+        
+        // Validate
+        if (!customerEmail || !customerName || !whatsappNumber) {
+            alert('Please fill in all required fields');
+            button.disabled = false;
+            button.innerHTML = '<i class="bi bi-lock-fill me-2"></i>Proceed to Secure Payment';
+            return;
         }
         
-        console.log('Checkout ready. Paddle will process payment.');
+        // Open Paddle Checkout
+        Paddle.Checkout.open({
+            items: [{
+                priceId: '{{ $product->paddle_price_id }}',
+                quantity: 1
+            }],
+            customer: {
+                email: customerEmail,
+            },
+            customData: {
+                product_id: {{ $product->id }},
+                user_id: {{ auth()->id() }},
+                customer_name: customerName,
+                whatsapp_number: whatsappNumber
+            },
+            settings: {
+                successUrl: '{{ route("checkout.success") }}',
+                displayMode: 'overlay',
+                theme: 'light',
+                locale: 'en'
+            }
+        }).then((result) => {
+            console.log('Paddle checkout opened:', result);
+        }).catch((error) => {
+            console.error('Paddle error:', error);
+            alert('Error opening checkout: ' + error.message);
+            button.disabled = false;
+            button.innerHTML = '<i class="bi bi-lock-fill me-2"></i>Proceed to Secure Payment';
+        });
     });
+    
+    console.log('Paddle checkout ready. Price ID: {{ $product->paddle_price_id }}');
 </script>
 @endpush
 
@@ -191,12 +247,12 @@
                                 </div>
                             </div>
 
-                            <!-- Submit Button -->
+                            <!-- Submit Button with Direct Paddle.js -->
                             <div id="paddle-button-container">
-                                <x-paddle-button :checkout="$checkout" class="btn btn-lg w-100 py-3 fw-bold shadow text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">
+                                <button type="button" id="checkout-button" class="btn btn-lg w-100 py-3 fw-bold shadow text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">
                                     <i class="bi bi-lock-fill me-2"></i>
                                     Proceed to Secure Payment
-                                </x-paddle-button>
+                                </button>
                             </div>
 
                             <p class="text-center text-muted small mt-3 mb-0">
