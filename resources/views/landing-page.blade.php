@@ -97,16 +97,8 @@
 
                         <!-- Pricing Info -->
                         <div class="mb-4">
-                            @php
-                                $minPrice = $product->plans->min('price');
-                                $maxPrice = $product->plans->max('price');
-                            @endphp
-                            @if($minPrice == $maxPrice)
-                                <div class="h3 fw-bold text-primary mb-0">${{ number_format($minPrice, 0) }}</div>
-                            @else
-                                <div class="h3 fw-bold text-primary mb-0">${{ number_format($minPrice, 0) }} - ${{ number_format($maxPrice, 0) }}</div>
-                            @endif
-                            <small class="text-muted">{{ $product->plans->count() }} pricing {{ $product->plans->count() > 1 ? 'plans' : 'plan' }} available</small>
+                            <div class="h3 fw-bold text-primary mb-0">${{ number_format($product->price, 0) }}</div>
+                            <small class="text-muted">One-time payment</small>
                         </div>
 
                         <!-- Quick Features -->

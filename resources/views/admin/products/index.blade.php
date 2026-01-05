@@ -39,8 +39,8 @@
                         <th class="px-4 py-3 fw-semibold">Product</th>
                         <th class="px-4 py-3 fw-semibold">Type</th>
                         <th class="px-4 py-3 fw-semibold">Version</th>
-                        <th class="px-4 py-3 fw-semibold">File Size</th>
-                        <th class="px-4 py-3 fw-semibold">Plans</th>
+                        <th class="px-4 py-3 fw-semibold">Price</th>
+                        <th class="px-4 py-3 fw-semibold">Max Domains</th>
                         <th class="px-4 py-3 fw-semibold">Status</th>
                         <th class="px-4 py-3 fw-semibold text-end">Actions</th>
                     </tr>
@@ -77,13 +77,21 @@
                                 v{{ $product->version }}
                             </span>
                         </td>
-                        <td class="px-4 py-3 text-muted">
-                            {{ $product->formatted_file_size ?? 'N/A' }}
+                        <td class="px-4 py-3">
+                            <span class="fw-bold text-success">
+                                ${{ number_format($product->price, 2) }}
+                            </span>
                         </td>
                         <td class="px-4 py-3">
-                            <span class="badge bg-info bg-opacity-10 text-info">
-                                {{ $product->plans->count() }} {{ Str::plural('plan', $product->plans->count()) }}
-                            </span>
+                            @if($product->max_domains === -1)
+                                <span class="badge bg-info">
+                                    <i class="bi bi-infinity"></i> Unlimited
+                                </span>
+                            @else
+                                <span class="badge bg-secondary">
+                                    {{ $product->max_domains }} {{ Str::plural('domain', $product->max_domains) }}
+                                </span>
+                            @endif
                         </td>
                         <td class="px-4 py-3">
                             @if($product->is_active)
@@ -100,6 +108,14 @@
                         </td>
                         <td class="px-4 py-3">
                             <div class="d-flex gap-2 justify-content-end">
+                                <!-- View Product Page -->
+                                <a href="{{ route('product.show', $product->slug) }}" 
+                                   class="btn btn-sm btn-outline-info"
+                                   title="View Product Page"
+                                   target="_blank">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                
                                 @if($product->file_path)
                                 <a href="{{ route('admin.products.download', $product) }}" 
                                    class="btn btn-sm btn-outline-primary"

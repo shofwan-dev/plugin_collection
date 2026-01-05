@@ -318,28 +318,28 @@
                             <label class="form-label fw-semibold">Paddle Seller ID (Vendor ID)</label>
                             <input type="text" name="paddle_seller_id" value="{{ $settings['paddle']['paddle_seller_id'] ?? '' }}" 
                                    class="form-control font-monospace" placeholder="12345">
-                            <small class="text-muted">Your Paddle Seller ID (found in Developer Tools → Authentication)</small>
+                            <small class="text-muted">Click the '...' icon in top-left sidebar of Paddle Dashboard to see your Seller ID</small>
                         </div>
 
                         <div class="col-12">
                             <label class="form-label fw-semibold">API Key</label>
                             <input type="text" name="paddle_api_key" value="{{ $settings['paddle']['paddle_api_key'] ?? '' }}" 
                                    class="form-control font-monospace" placeholder="pdl_sdbx_apikey_... or pdl_live_apikey_...">
-                            <small class="text-muted">Server-side API key for backend operations</small>
+                            <small class="text-muted">From Developer Tools → Authentication → API Keys (create new if needed)</small>
                         </div>
 
                         <div class="col-12">
                             <label class="form-label fw-semibold">Client Token</label>
                             <input type="text" name="paddle_client_token" value="{{ $settings['paddle']['paddle_client_token'] ?? '' }}" 
                                    class="form-control font-monospace" placeholder="test_... or live_...">
-                            <small class="text-muted">Client-side token for Paddle.js (safe to use in frontend)</small>
+                            <small class="text-muted">From Developer Tools → Authentication → Client-side tokens (create new if needed)</small>
                         </div>
 
                         <div class="col-12">
-                            <label class="form-label fw-semibold">Webhook Secret</label>
+                            <label class="form-label fw-semibold">Webhook Secret (Optional)</label>
                             <input type="text" name="paddle_webhook_secret" value="{{ $settings['paddle']['paddle_webhook_secret'] ?? '' }}" 
                                    class="form-control font-monospace" placeholder="pdl_ntfset_...">
-                            <small class="text-muted">Used to verify webhook signatures</small>
+                            <small class="text-muted">From Notifications → Notification Settings → Webhook Secret (after setting webhook URL below)</small>
                         </div>
 
                         <div class="col-12">
@@ -373,18 +373,42 @@
                     </h6>
                     <ol class="small mb-0 ps-3">
                         <li class="mb-2">Create Paddle account at <a href="https://vendors.paddle.com/" target="_blank">vendors.paddle.com</a></li>
-                        <li class="mb-2">Go to Developer Tools → Authentication</li>
-                        <li class="mb-2">Create API Key with transaction permissions</li>
-                        <li class="mb-2">Create Client-side Token</li>
-                        <li class="mb-2">Set up webhook notification</li>
-                        <li class="mb-2">Create products and prices in Paddle</li>
-                        <li class="mb-0">Update plans with Paddle Price IDs</li>
+                        <li class="mb-2">Click '...' icon (top-left sidebar) to find your <strong>Seller ID</strong></li>
+                        <li class="mb-2">Go to <strong>Developer Tools → Authentication</strong></li>
+                        <li class="mb-2">Create <strong>API Key</strong> with all permissions</li>
+                        <li class="mb-2">Create <strong>Client-side Token</strong></li>
+                        <li class="mb-2">Go to <strong>Catalog</strong> to create products and prices</li>
+                        <li class="mb-2">Copy the <strong>Price ID</strong> from each price</li>
+                        <li class="mb-0">Add Price ID to your products in Admin → Products</li>
                     </ol>
                 </div>
             </div>
         </div>
     </div>
 </form>
+
+<!-- Test Paddle Connection -->
+<div class="row g-4 mt-1">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm bg-primary bg-opacity-10 border-primary border-2">
+            <div class="card-body p-3">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="bi bi-credit-card text-primary fs-2"></i>
+                    <div class="flex-grow-1">
+                        <p class="mb-0 fw-semibold text-primary">Test Paddle Connection</p>
+                        <small class="text-muted">Verify API credentials and connection</small>
+                    </div>
+                    <form method="POST" action="{{ route('admin.settings.test-paddle') }}">
+                        @csrf
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-plug me-2"></i> Test Connection
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- Envato API Settings -->
 <form method="POST" action="{{ route('admin.settings.update') }}" class="row g-4 mt-4">
@@ -453,28 +477,6 @@
         </div>
     </div>
 </form>
-
-<div class="row g-4 mt-1 mb-4">
-    <div class="col-lg-8">
-        <div class="card border-0 shadow-sm bg-primary bg-opacity-10 border-primary border-2">
-            <div class="card-body p-3">
-                <div class="d-flex align-items-center gap-3">
-                    <i class="bi bi-credit-card text-primary fs-2"></i>
-                    <div class="flex-grow-1">
-                        <p class="mb-0 fw-semibold text-primary">Test Paddle Connection</p>
-                        <small class="text-muted">Verify API credentials and connection</small>
-                    </div>
-                    <form method="POST" action="{{ route('admin.settings.test-paddle') }}">
-                        @csrf
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-plug me-2"></i> Test Connection
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 
 @push('scripts')
 <script>

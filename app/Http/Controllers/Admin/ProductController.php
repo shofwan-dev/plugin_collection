@@ -40,9 +40,18 @@ class ProductController extends Controller
             'description' => 'nullable|string',
             'version' => 'required|string|max:50',
             'type' => 'required|in:plugin,website,addon',
-            'file' => 'required|file|mimes:zip,rar,tar,gz|max:51200', // Max 50MB
+            'price' => 'required|numeric|min:0',
+            'max_domains' => 'required|integer|min:-1',
+            'file' => 'required|file|mimes:zip,rar,tar,gz|max:51200',
+            'image' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:2048',
             'changelog' => 'nullable|string',
             'requirements' => 'nullable|string',
+            'benefits' => 'nullable|array',
+            'testimonials' => 'nullable|array',
+            'meta_title' => 'nullable|string|max:60',
+            'meta_description' => 'nullable|string|max:160',
+            'paddle_price_id' => 'nullable|string|max:100',
+            'paddle_product_id' => 'nullable|string|max:100',
         ]);
 
         // Generate slug
@@ -97,6 +106,28 @@ class ProductController extends Controller
             }
         }
 
+        // Handle image upload
+        if ($request->hasFile('image') && $request->file('image')->isValid()) {
+            try {
+                // Ensure images directory exists
+                $imagesPath = storage_path('app/public/products/images');
+                if (!file_exists($imagesPath)) {
+                    mkdir($imagesPath, 0755, true);
+                }
+
+                $image = $request->file('image');
+                $imageName = time() . '_' . Str::slug(pathinfo($image->getClientOriginalName(), PATHINFO_FILENAME)) . '.' . $image->getClientOriginalExtension();
+                $imageDestination = $imagesPath . DIRECTORY_SEPARATOR . $imageName;
+
+                if (move_uploaded_file($image->getPathname(), $imageDestination)) {
+                    $validated['image'] = 'products/images/' . $imageName;
+                    \Log::info('Product image uploaded', ['path' => $validated['image']]);
+                }
+            } catch (\Exception $e) {
+                \Log::error('Product image upload error: ' . $e->getMessage());
+            }
+        }
+
         $validated['is_active'] = $request->has('is_active');
 
         Product::create($validated);
@@ -123,9 +154,18 @@ class ProductController extends Controller
             'description' => 'nullable|string',
             'version' => 'required|string|max:50',
             'type' => 'required|in:plugin,website,addon',
+            'price' => 'required|numeric|min:0',
+            'max_domains' => 'required|integer|min:-1',
             'file' => 'nullable|file|mimes:zip,rar,tar,gz|max:51200',
+            'image' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:2048',
             'changelog' => 'nullable|string',
             'requirements' => 'nullable|string',
+            'benefits' => 'nullable|array',
+            'testimonials' => 'nullable|array',
+            'meta_title' => 'nullable|string|max:60',
+            'meta_description' => 'nullable|string|max:160',
+            'paddle_price_id' => 'nullable|string|max:100',
+            'paddle_product_id' => 'nullable|string|max:100',
         ]);
 
         $validated['slug'] = Str::slug($validated['name']);
@@ -191,6 +231,41 @@ class ProductController extends Controller
             }
         }
 
+        // Handle image upload
+        if ($request->hasFile('image') && $request->file('image')->isValid()) {
+            try {
+                // Ensure images directory exists
+                $imagesPath = storage_path('app/public/products/images');
+                if (!file_exists($imagesPath)) {
+                    mkdir($imagesPath, 0755, true);
+                }
+
+                // Delete old image if exists
+                if ($product->image && !empty($product->image)) {
+                    $oldImagePath = storage_path('app/public/' . $product->image);
+                    if (file_exists($oldImagePath)) {
+                        try {
+                            unlink($oldImagePath);
+                            \Log::info('Deleted old product image', ['path' => $oldImagePath]);
+                        } catch (\Exception $e) {
+                            \Log::warning('Could not delete old product image: ' . $e->getMessage());
+                        }
+                    }
+                }
+
+                $image = $request->file('image');
+                $imageName = time() . '_' . Str::slug(pathinfo($image->getClientOriginalName(), PATHINFO_FILENAME)) . '.' . $image->getClientOriginalExtension();
+                $imageDestination = $imagesPath . DIRECTORY_SEPARATOR . $imageName;
+
+                if (move_uploaded_file($image->getPathname(), $imageDestination)) {
+                    $validated['image'] = 'products/images/' . $imageName;
+                    \Log::info('Product image updated', ['path' => $validated['image']]);
+                }
+            } catch (\Exception $e) {
+                \Log::error('Product image update error: ' . $e->getMessage());
+            }
+        }
+
         $validated['is_active'] = $request->has('is_active');
 
         $product->update($validated);
@@ -213,6 +288,19 @@ class ProductController extends Controller
                     \Log::info('Deleted product file', ['path' => $filePath]);
                 } catch (\Exception $e) {
                     \Log::error('Product file deletion error: ' . $e->getMessage());
+                }
+            }
+        }
+
+        // Delete image if exists
+        if ($product->image && !empty($product->image)) {
+            $imagePath = storage_path('app/public/' . $product->image);
+            if (file_exists($imagePath)) {
+                try {
+                    unlink($imagePath);
+                    \Log::info('Deleted product image', ['path' => $imagePath]);
+                } catch (\Exception $e) {
+                    \Log::error('Product image deletion error: ' . $e->getMessage());
                 }
             }
         }

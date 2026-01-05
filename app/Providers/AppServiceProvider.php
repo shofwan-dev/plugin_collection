@@ -42,8 +42,13 @@ class AppServiceProvider extends ServiceProvider
                         'cashier.sandbox' => $sandbox,
                     ]);
 
+                    // Only log warning once per day to avoid log spam
                     if (empty(config('cashier.seller_id')) || empty(config('cashier.api_key'))) {
-                        \Log::warning('Paddle integration is not fully configured. Please set Seller ID and API Key in the admin panel.');
+                        $cacheKey = 'paddle_config_warning_logged';
+                        if (!\Illuminate\Support\Facades\Cache::has($cacheKey)) {
+                            \Log::warning('Paddle integration is not fully configured. Please set Seller ID and API Key in the admin panel.');
+                            \Illuminate\Support\Facades\Cache::put($cacheKey, true, now()->addDay());
+                        }
                     }
                 }
             }

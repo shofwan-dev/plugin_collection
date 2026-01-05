@@ -52,6 +52,85 @@
         backdrop-filter: blur(10px);
         background: rgba(255, 255, 255, 0.9);
     }
+    
+    /* Product Image Styles */
+    .product-image-wrapper {
+        position: relative;
+        display: inline-block;
+        max-width: 30%;
+    }
+    
+    .product-image {
+        position: relative;
+        overflow: hidden;
+        border-radius: 20px;
+        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+    
+    .product-image::before {
+        content: '';
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        background: linear-gradient(45deg, #667eea, #764ba2, #f093fb, #4facfe);
+        background-size: 300% 300%;
+        border-radius: 20px;
+        z-index: -1;
+        animation: gradientShift 4s ease infinite;
+        opacity: 0;
+        transition: opacity 0.5s ease;
+    }
+    
+    .product-image:hover::before {
+        opacity: 1;
+    }
+    
+    @keyframes gradientShift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    
+    .product-image img {
+        display: block;
+        width: 100%;
+        height: auto;
+        transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        border-radius: 18px;
+    }
+    
+    .product-image:hover img {
+        transform: scale(1.05);
+    }
+    
+    .product-image:hover {
+        box-shadow: 0 30px 80px rgba(102, 126, 234, 0.4);
+        transform: translateY(-10px);
+    }
+    
+    /* Floating animation */
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-20px); }
+    }
+    
+    .product-image-wrapper {
+        animation: float 6s ease-in-out infinite;
+    }
+    
+    .product-image-wrapper:hover {
+        animation-play-state: paused;
+    }
+    
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+        .product-image-wrapper {
+            max-width: 60%;
+        }
+    }
 </style>
 @endpush
 
@@ -62,7 +141,8 @@
     <div class="hero-blob" style="width: 300px; height: 300px; background: rgba(255,255,255,0.1); bottom: -10%; left: -10%; animation-delay: 2s;"></div>
 
     <div class="container py-5 position-relative" style="z-index: 1;">
-        <div class="row align-items-center">
+        <div class="row align-items-center g-4">
+            <!-- Left Column - Content + Image -->
             <div class="col-lg-7">
                 <!-- Urgency Badge -->
                 <div class="mb-3">
@@ -94,25 +174,20 @@
                 </div>
             </div>
 
+            <!-- Right Column - Price Box -->
             <div class="col-lg-5">
-                <!-- Price Box -->
                 <div class="price-box p-5 text-center shadow-lg">
-                    @php
-                        $mainPlan = $plans->where('is_popular', true)->first() ?? $plans->first();
-                    @endphp
-                    
-                    @if($mainPlan)
                     <!-- Original Price (Strikethrough) -->
                     <div class="mb-2">
                         <span class="text-white-50 text-decoration-line-through fs-4">
-                            ${{ number_format($mainPlan->price * 1.5, 0) }}
+                            ${{ number_format($product->price * 1.5, 0) }}
                         </span>
                     </div>
 
                     <!-- Current Price -->
                     <div class="mb-3">
-                        <span class="display-1 fw-bold text-white">${{ number_format($mainPlan->price, 0) }}</span>
-                        <span class="text-white-50 fs-5">/{{ $mainPlan->billing_period }}</span>
+                        <span class="display-1 fw-bold text-white">${{ number_format($product->price, 0) }}</span>
+                        <span class="text-white-50 fs-5">/one-time</span>
                     </div>
 
                     <!-- Savings Badge -->
@@ -124,7 +199,9 @@
 
                     <!-- CTA Button -->
                     @auth
-                    <a href="{{ route('checkout.show', $mainPlan->slug) }}" class="btn btn-light btn-lg w-100 py-4 fw-bold mb-3 shadow">
+                    <a href="{{ route('checkout.show', $product) }}" 
+                       class="btn btn-light btn-lg w-100 py-4 fw-bold mb-3 shadow"
+                       onclick="console.log('Checkout clicked!', this.href); return true;">
                         <i class="bi bi-cart-check-fill me-2"></i> GET INSTANT ACCESS NOW
                     </a>
                     @else
@@ -137,12 +214,29 @@
                     <div class="text-white-50 small">
                         <i class="bi bi-shield-fill-check"></i> 30-Day Money-Back Guarantee
                     </div>
-                    @endif
                 </div>
             </div>
         </div>
     </div>
 </section>
+
+<!-- Product Showcase -->
+@if($product->image)
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 text-center">
+                <div class="product-image-wrapper">
+                    <div class="product-image">
+                        <img src="{{ asset('storage/' . $product->image) }}" 
+                             alt="{{ $product->name }}">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+@endif
 
 <!-- Benefits Section (Psychology Marketing) -->
 <section class="py-5 bg-white">
@@ -153,81 +247,38 @@
         </div>
 
         <div class="row g-4">
-            <div class="col-lg-6">
-                <div class="benefit-item p-4 rounded mb-3">
-                    <div class="d-flex align-items-start">
-                        <div class="bg-success bg-opacity-10 p-3 rounded-circle me-3">
-                            <i class="bi bi-rocket-takeoff-fill text-success fs-3"></i>
-                        </div>
-                        <div>
-                            <h5 class="fw-bold mb-2">Instant Setup in 5 Minutes</h5>
-                            <p class="text-muted mb-0">No technical skills required. Our step-by-step wizard gets you up and running immediately.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="benefit-item p-4 rounded mb-3">
-                    <div class="d-flex align-items-start">
-                        <div class="bg-primary bg-opacity-10 p-3 rounded-circle me-3">
-                            <i class="bi bi-graph-up-arrow text-primary fs-3"></i>
-                        </div>
-                        <div>
-                            <h5 class="fw-bold mb-2">Boost Response Rate by 300%</h5>
-                            <p class="text-muted mb-0">Get instant notifications on WhatsApp. Never miss a lead again.</p>
+            @if($product->benefits && count($product->benefits) > 0)
+                @foreach($product->benefits as $index => $benefit)
+                <div class="col-lg-6">
+                    <div class="benefit-item p-4 rounded mb-3">
+                        <div class="d-flex align-items-start">
+                            <div class="bg-{{ ['success', 'primary', 'warning', 'info', 'danger', 'secondary'][$index % 6] }} bg-opacity-10 p-3 rounded-circle me-3">
+                                <i class="bi bi-{{ $benefit['icon'] ?? 'check-circle-fill' }} text-{{ ['success', 'primary', 'warning', 'info', 'danger', 'secondary'][$index % 6] }} fs-3"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold mb-2">{{ $benefit['title'] }}</h5>
+                                <p class="text-muted mb-0">{{ $benefit['description'] }}</p>
+                            </div>
                         </div>
                     </div>
                 </div>
-
-                <div class="benefit-item p-4 rounded mb-3">
-                    <div class="d-flex align-items-start">
-                        <div class="bg-warning bg-opacity-10 p-3 rounded-circle me-3">
-                            <i class="bi bi-shield-check text-warning fs-3"></i>
-                        </div>
-                        <div>
-                            <h5 class="fw-bold mb-2">Enterprise-Grade Security</h5>
-                            <p class="text-muted mb-0">Your data is encrypted and protected with industry-standard security protocols.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-lg-6">
-                <div class="benefit-item p-4 rounded mb-3">
-                    <div class="d-flex align-items-start">
-                        <div class="bg-info bg-opacity-10 p-3 rounded-circle me-3">
-                            <i class="bi bi-arrow-repeat text-info fs-3"></i>
-                        </div>
-                        <div>
-                            <h5 class="fw-bold mb-2">Free Lifetime Updates</h5>
-                            <p class="text-muted mb-0">Get all future updates and new features at no additional cost. Forever.</p>
+                @endforeach
+            @else
+                <!-- Default benefits if none set -->
+                <div class="col-lg-6">
+                    <div class="benefit-item p-4 rounded mb-3">
+                        <div class="d-flex align-items-start">
+                            <div class="bg-success bg-opacity-10 p-3 rounded-circle me-3">
+                                <i class="bi bi-rocket-takeoff-fill text-success fs-3"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold mb-2">Instant Setup in 5 Minutes</h5>
+                                <p class="text-muted mb-0">No technical skills required. Our step-by-step wizard gets you up and running immediately.</p>
+                            </div>
                         </div>
                     </div>
                 </div>
-
-                <div class="benefit-item p-4 rounded mb-3">
-                    <div class="d-flex align-items-start">
-                        <div class="bg-danger bg-opacity-10 p-3 rounded-circle me-3">
-                            <i class="bi bi-headset text-danger fs-3"></i>
-                        </div>
-                        <div>
-                            <h5 class="fw-bold mb-2">Priority Support</h5>
-                            <p class="text-muted mb-0">Get help when you need it. Our expert team responds within 24 hours.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="benefit-item p-4 rounded mb-3">
-                    <div class="d-flex align-items-start">
-                        <div class="bg-secondary bg-opacity-10 p-3 rounded-circle me-3">
-                            <i class="bi bi-people-fill text-secondary fs-3"></i>
-                        </div>
-                        <div>
-                            <h5 class="fw-bold mb-2">10,000+ Happy Customers</h5>
-                            <p class="text-muted mb-0">Trusted by businesses worldwide. Join our growing community.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            @endif
         </div>
     </div>
 </section>
@@ -321,21 +372,20 @@
         <h2 class="display-4 fw-bold mb-4">Ready to Transform Your Business?</h2>
         <p class="lead mb-4">Join 10,000+ satisfied customers today. Risk-free with our 30-day money-back guarantee.</p>
         
-        @php
-            $mainPlan = $plans->where('is_popular', true)->first() ?? $plans->first();
-        @endphp
-        
-        @if($mainPlan)
         @auth
-        <a href="{{ route('checkout.show', $mainPlan->slug) }}" class="btn btn-light btn-lg px-5 py-4 fw-bold shadow-lg">
-            <i class="bi bi-cart-check-fill me-2"></i> GET STARTED NOW - ${{ number_format($mainPlan->price, 0) }}
+        <a href="{{ route('checkout.show', $product) }}" 
+           class="btn btn-light btn-lg px-5 py-4 fw-bold shadow-lg"
+           onclick="console.log('Final CTA clicked!', this.href); return true;">
+            <i class="bi bi-cart-check-fill me-2"></i> GET STARTED NOW - ${{ number_format($product->price, 0) }}
         </a>
         @else
-        <a href="{{ route('login') }}" class="btn btn-light btn-lg px-5 py-4 fw-bold shadow-lg">
+        <a href="{{ route('login') }}" 
+           class="btn btn-light btn-lg px-5 py-4 fw-bold shadow-lg"
+           onclick="console.log('Final Login CTA clicked!'); return true;">
             <i class="bi bi-box-arrow-in-right me-2"></i> LOGIN TO PURCHASE
         </a>
         @endauth
-        @endif
+        
         
         <div class="mt-4 text-white-50">
             <i class="bi bi-shield-check me-2"></i> Secure checkout • <i class="bi bi-arrow-repeat mx-2"></i> 30-day guarantee • <i class="bi bi-headset mx-2"></i> 24/7 support
@@ -343,3 +393,20 @@
     </div>
 </section>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Product page loaded for: {{ $product->slug }}');
+        
+        // Log all clicks on buttons and links for debugging
+        document.addEventListener('click', function(e) {
+            const el = e.target.closest('a, button');
+            if (el) {
+                console.log('Clicked element:', el);
+                console.log('Href/Target:', el.href || el.dataset.target || 'no target');
+            }
+        });
+    });
+</script>
+@endpush

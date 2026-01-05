@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Plan;
+use App\Models\Product;
 use App\Models\Order;
 use App\Services\WhatsAppService;
 use Illuminate\Http\Request;
@@ -16,36 +16,57 @@ class CheckoutController extends Controller
     /**
      * Show checkout page
      */
-    public function show(Plan $plan): View|RedirectResponse
+    public function show(Product $product): View|RedirectResponse|\Illuminate\Http\Response
     {
-        if (!$plan->paddle_price_id) {
-            return redirect()->back()->with('error', 'This plan is not configured for payment yet.');
+        Log::info('Checkout show requested for product: ' . $product->slug);
+
+        if (!$product->paddle_price_id) {
+            Log::warning('Product missing Paddle Price ID: ' . $product->slug);
+            return redirect()->back()->with('error', 'This product is not configured for payment yet (Missing Paddle Price ID).');
         }
 
         if (empty(config('cashier.seller_id'))) {
+            Log::error('Paddle Seller ID is missing in configuration');
             return redirect()->back()->with('error', 'Paddle Payment Gateway is not fully configured (Missing Seller ID). Please contact administrator.');
         }
 
-        $user = Auth::user();
-        
-        // Prepare checkout using Cashier
-        $checkout = $user->checkout([$plan->paddle_price_id])
-            ->returnTo(route('checkout.success'))
-            ->customData([
-                'plan_id' => $plan->id,
-                'user_id' => $user->id,
-            ]);
+        try {
+            $user = Auth::user();
+            
+            // Prepare checkout using Cashier
+            // We use the price ID and only pass the minimum required data to avoid conflict
+            $checkout = $user->checkout([$product->paddle_price_id])
+                ->returnTo(route('checkout.success'))
+                ->customData([
+                    'product_id' => $product->id,
+                    'user_id' => $user->id,
+                    'customer_name' => $user->name,
+                    'customer_email' => $user->email,
+                    'whatsapp_number' => $user->phone ?? '',
+                ]);
 
-        session(['last_plan_id' => $plan->id]);
+            session(['last_product_id' => $product->id]);
 
-        return view('checkout.show', compact('plan', 'checkout'));
+            $response = response()->view('checkout.show', compact('product', 'checkout'));
+            
+            // Add CSP headers to allow framing by Paddle and allow localhost
+            $response->headers->set(
+                'Content-Security-Policy',
+                "frame-ancestors 'self' http://localhost http://localhost:8000 https://sandbox-buy.paddle.com https://buy.paddle.com"
+            );
+
+            return $response;
+        } catch (\Exception $e) {
+            Log::error('Error creating Paddle checkout: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'An error occurred while preparing secure checkout. Please try again later.');
+        }
     }
 
     /**
      * Process checkout - This might be handled directly by Paddle.js in the view
      * but we keep it for any pre-processing if necessary.
      */
-    public function process(Request $request, Plan $plan): RedirectResponse
+    public function process(Request $request, Product $product): RedirectResponse
     {
         // With Cashier, we usually don't need a custom process method 
         // if we use the checkout component, but we can use it to create a pending order.
@@ -54,7 +75,7 @@ class CheckoutController extends Controller
             'terms' => 'required|accepted',
         ]);
 
-        return redirect()->route('checkout.show', $plan->slug)
+        return redirect()->route('checkout.show', $product->slug)
             ->with('status', 'Please complete your payment.');
     }
 
@@ -66,7 +87,7 @@ class CheckoutController extends Controller
         // Find order by user or wait for webhook
         $user = Auth::user();
         $order = Order::where('user_id', $user->id)
-            ->where('plan_id', session('last_plan_id'))
+            ->where('product_id', session('last_product_id'))
             ->latest()
             ->first();
 

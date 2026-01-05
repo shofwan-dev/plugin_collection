@@ -25,7 +25,7 @@
 
             <h3>License Details:</h3>
             <ul>
-                <li><strong>Plan:</strong> {{ $license->plan->name }}</li>
+                <li><strong>Product:</strong> {{ $license->product->name }}</li>
                 <li><strong>Max Domains:</strong> {{ $license->max_domains === -1 ? 'Unlimited' : $license->max_domains }}</li>
                 <li><strong>Expires:</strong> {{ $license->expires_at ? $license->expires_at->format('Y-m-d') : 'Never' }}</li>
             </ul>

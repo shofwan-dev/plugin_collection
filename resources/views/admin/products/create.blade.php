@@ -39,14 +39,56 @@
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Version *</label>
                 <input type="text" name="version" value="{{ old('version', '1.0.0') }}" required
-                    class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 @error('version') border-red-500 @enderror">
                 @error('version')
                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                 @enderror
             </div>
 
-            <!-- File Upload -->
+            <!-- Price -->
             <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Price ($) *</label>
+                <input type="number" name="price" value="{{ old('price', '0.00') }}" step="0.01" required
+                    class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 @error('price') border-red-500 @enderror">
+                @error('price')
+                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <!-- Max Domains -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Max Domains * (-1 for unlimited)</label>
+                <input type="number" name="max_domains" value="{{ old('max_domains', '1') }}" required
+                    class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 @error('max_domains') border-red-500 @enderror">
+                @error('max_domains')
+                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <!-- Paddle Price ID -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Paddle Price ID (Optional)</label>
+                <input type="text" name="paddle_price_id" value="{{ old('paddle_price_id') }}"
+                    placeholder="pri_..."
+                    class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono @error('paddle_price_id') border-red-500 @enderror">
+                @error('paddle_price_id')
+                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <!-- Paddle Product ID -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Paddle Product ID (Optional)</label>
+                <input type="text" name="paddle_product_id" value="{{ old('paddle_product_id') }}"
+                    placeholder="pro_..."
+                    class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono @error('paddle_product_id') border-red-500 @enderror">
+                @error('paddle_product_id')
+                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <!-- File Upload -->
+            <div class="md:col-span-2">
                 <label class="block text-sm font-medium text-gray-700 mb-2">Upload File * (Max 50MB)</label>
                 <input type="file" name="file" required accept=".zip,.rar,.tar,.gz"
                     class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">

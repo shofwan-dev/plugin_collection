@@ -21,11 +21,25 @@ class Product extends Model
         'is_active',
         'changelog',
         'requirements',
+        'icon',
+        'image',
+        'price',
+        'paddle_price_id',
+        'paddle_product_id',
+        'max_domains',
+        'benefits',
+        'testimonials',
+        'meta_title',
+        'meta_description',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
         'file_size' => 'integer',
+        'price' => 'decimal:2',
+        'max_domains' => 'integer',
+        'benefits' => 'array',
+        'testimonials' => 'array',
     ];
 
     /**

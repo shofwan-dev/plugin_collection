@@ -1,6 +1,6 @@
 @extends('layouts.public')
 
-@section('title', 'Secure Checkout - ' . $plan->name)
+@section('title', 'Secure Checkout - ' . $product->name)
 
 @push('styles')
 <style>
@@ -79,6 +79,46 @@
 @push('scripts')
 <!-- Paddle.js from Cashier -->
 @paddleJS
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const paddleButton = document.querySelector('.paddle_button');
+        const customerNameInput = document.getElementById('customer_name');
+        const emailInput = document.getElementById('email');
+        const whatsappInput = document.getElementById('whatsapp_number');
+
+        function updatePaddleData() {
+            if (!paddleButton) return;
+
+            // Get existing custom data
+            let customData = {};
+            try {
+                const existingData = paddleButton.getAttribute('data-custom-data');
+                if (existingData) {
+                    customData = JSON.parse(existingData);
+                }
+            } catch (e) {
+                console.error('Error parsing existing custom data', e);
+            }
+
+            // Update with form values
+            customData.whatsapp_number = whatsappInput.value;
+            customData.customer_name = customerNameInput.value;
+            customData.customer_email = emailInput.value;
+
+            // Set modified custom data back to button
+            paddleButton.setAttribute('data-custom-data', JSON.stringify(customData));
+        }
+
+        // Listen for changes
+        customerNameInput.addEventListener('input', updatePaddleData);
+        emailInput.addEventListener('input', updatePaddleData);
+        whatsappInput.addEventListener('input', updatePaddleData);
+
+        // Initial run
+        updatePaddleData();
+    });
+</script>
 @endpush
 
 @section('content')
@@ -137,22 +177,29 @@
                                 
                                 <div class="row g-3">
                                     <div class="col-md-6">
-                                        <label for="first_name" class="form-label fw-semibold">First Name <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control form-control-lg" id="first_name" name="first_name" required value="{{ old('first_name', auth()->user()->name ?? '') }}" placeholder="John" readonly>
-                                        @error('first_name')
+                                        <label for="customer_name" class="form-label fw-semibold">Full Name <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control form-control-lg sync-paddle" id="customer_name" name="customer_name" required value="{{ old('customer_name', auth()->user()->name ?? '') }}" placeholder="John Doe">
+                                        @error('customer_name')
                                             <div class="text-danger small mt-1">{{ $message }}</div>
                                         @enderror
                                     </div>
                                     <div class="col-md-6">
-                                        <label for="last_name" class="form-label fw-semibold">Last Name</label>
-                                        <input type="text" class="form-control form-control-lg" id="last_name" name="last_name" placeholder="Doe" readonly>
+                                        <label for="whatsapp_number" class="form-label fw-semibold">WhatsApp Number <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control form-control-lg sync-paddle" id="whatsapp_number" name="whatsapp_number" required value="{{ old('whatsapp_number') }}" placeholder="628123456789">
+                                        <small class="text-muted">Format: 62812...</small>
+                                        @error('whatsapp_number')
+                                            <div class="text-danger small mt-1">{{ $message }}</div>
+                                        @enderror
                                     </div>
                                 </div>
 
                                 <div class="mt-3">
                                     <label for="email" class="form-label fw-semibold">Email Address <span class="text-danger">*</span></label>
-                                    <input type="email" class="form-control form-control-lg" id="email" name="email" required value="{{ old('email', auth()->user()->email ?? '') }}" placeholder="john@example.com" readonly>
-                                    <small class="text-muted">Your license key will be sent to this email</small>
+                                    <input type="email" class="form-control form-control-lg sync-paddle" id="email" name="email" required value="{{ old('email', auth()->user()->email ?? '') }}" placeholder="john@example.com">
+                                    <small class="text-muted">Your license key and file will be sent here</small>
+                                    @error('email')
+                                        <div class="text-danger small mt-1">{{ $message }}</div>
+                                    @enderror
                                 </div>
                             </div>
 
@@ -169,10 +216,12 @@
                             </div>
 
                             <!-- Submit Button -->
-                            <x-paddle-button :checkout="$checkout" class="btn btn-lg w-100 py-3 fw-bold shadow text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">
-                                <i class="bi bi-lock-fill me-2"></i>
-                                Proceed to Secure Payment
-                            </x-paddle-button>
+                            <div id="paddle-button-container">
+                                <x-paddle-button :checkout="$checkout" class="btn btn-lg w-100 py-3 fw-bold shadow text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">
+                                    <i class="bi bi-lock-fill me-2"></i>
+                                    Proceed to Secure Payment
+                                </x-paddle-button>
+                            </div>
 
                             <p class="text-center text-muted small mt-3 mb-0">
                                 <i class="bi bi-shield-check me-1"></i>
@@ -212,19 +261,29 @@
                     <div class="price-breakdown shadow-lg mb-4">
                         <h4 class="fw-bold mb-4">Order Summary</h4>
                         
+                        <!-- Product Image -->
+                        @if($product->image)
+                        <div class="text-center mb-4">
+                            <img src="{{ asset('storage/' . $product->image) }}" 
+                                 alt="{{ $product->name }}" 
+                                 class="img-fluid rounded-3"
+                                 style="max-height: 150px; object-fit: cover;">
+                        </div>
+                        @endif
+                        
                         <div class="mb-3">
                             <div class="d-flex justify-content-between mb-2">
-                                <span>{{ $plan->name }}</span>
-                                <span class="fw-semibold">${{ number_format($plan->price, 2) }}</span>
+                                <span>{{ $product->name }}</span>
+                                <span class="fw-semibold">${{ number_format($product->price, 2) }}</span>
                             </div>
-                            <small class="opacity-75">{{ $plan->description }}</small>
+                            <small class="opacity-75">{{ $product->description }}</small>
                         </div>
 
                         <hr class="border-white opacity-25 my-4">
 
                         <div class="d-flex justify-content-between mb-2">
                             <span>Subtotal</span>
-                            <span>${{ number_format($plan->price, 2) }}</span>
+                            <span>${{ number_format($product->price, 2) }}</span>
                         </div>
                         <div class="d-flex justify-content-between mb-2">
                             <span>Tax</span>
@@ -236,10 +295,10 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <div class="fw-bold fs-5">Total</div>
-                                <small class="opacity-75">Billed {{ $plan->billing_period ?? 'one-time' }}</small>
+                                <small class="opacity-75">Billed one-time</small>
                             </div>
                             <div class="text-end">
-                                <div class="fw-bold fs-3">${{ number_format($plan->price, 0) }}</div>
+                                <div class="fw-bold fs-3">${{ number_format($product->price, 0) }}</div>
                             </div>
                         </div>
                     </div>
@@ -249,12 +308,10 @@
                         <div class="card-body p-4">
                             <h5 class="fw-bold mb-3">What's Included</h5>
                             <ul class="list-unstyled mb-0">
-                                @foreach($plan->features ?? [] as $feature)
                                 <li class="mb-2">
                                     <i class="bi bi-check-circle-fill text-success me-2"></i>
-                                    {{ $feature }}
+                                    License for {{ $product->max_domains == -1 ? 'unlimited' : $product->max_domains }} domain{{ $product->max_domains != 1 ? 's' : '' }}
                                 </li>
-                                @endforeach
                                 <li class="mb-2">
                                     <i class="bi bi-check-circle-fill text-success me-2"></i>
                                     Lifetime updates

@@ -21,6 +21,9 @@ class ProductSeeder extends Seeder
                 'version' => '2.1.0',
                 'type' => 'plugin',
                 'is_active' => true,
+                'price' => 49.00,
+                'max_domains' => 1,
+                'paddle_price_id' => null, // Set this in admin panel after creating in Paddle
                 'changelog' => "- Added multi-number support\n- Improved message formatting\n- Bug fixes and performance improvements\n- Added custom field mapping",
                 'requirements' => 'WordPress 5.0+, PHP 7.4+, Contact Form 7 5.0+',
             ],
@@ -31,6 +34,9 @@ class ProductSeeder extends Seeder
                 'version' => '3.0.5',
                 'type' => 'plugin',
                 'is_active' => true,
+                'price' => 99.00,
+                'max_domains' => 5,
+                'paddle_price_id' => null,
                 'changelog' => "- New analytics dashboard\n- WhatsApp message templates\n- Automation workflows\n- Multi-language support",
                 'requirements' => 'WordPress 5.5+, PHP 8.0+, Contact Form 7 5.5+',
             ],
@@ -41,6 +47,9 @@ class ProductSeeder extends Seeder
                 'version' => '1.5.2',
                 'type' => 'plugin',
                 'is_active' => true,
+                'price' => 199.00,
+                'max_domains' => -1,
+                'paddle_price_id' => null,
                 'changelog' => "- WhatsApp Business API support\n- Message broadcasting\n- Contact management\n- Automated responses",
                 'requirements' => 'WordPress 5.8+, PHP 8.0+, WooCommerce 6.0+ (optional)',
             ],
@@ -51,6 +60,9 @@ class ProductSeeder extends Seeder
                 'version' => '1.0.0',
                 'type' => 'website',
                 'is_active' => true,
+                'price' => 29.00,
+                'max_domains' => 1,
+                'paddle_price_id' => null,
                 'changelog' => "- Initial release\n- Responsive design\n- WhatsApp chat widget\n- Contact form integration",
                 'requirements' => 'WordPress 5.0+, PHP 7.4+',
             ],
@@ -61,15 +73,21 @@ class ProductSeeder extends Seeder
                 'version' => '2.3.1',
                 'type' => 'addon',
                 'is_active' => true,
+                'price' => 19.00,
+                'max_domains' => 3,
+                'paddle_price_id' => null,
                 'changelog' => "- New design options\n- Mobile optimization\n- Custom greeting messages\n- Analytics tracking",
                 'requirements' => 'WordPress 5.0+, PHP 7.4+',
             ],
         ];
 
         foreach ($products as $productData) {
-            Product::create($productData);
+            Product::updateOrCreate(
+                ['slug' => $productData['slug']],
+                $productData
+            );
         }
 
-        $this->command->info('✅ Created 5 dummy products');
+        $this->command->info('✅ Created/Updated 5 products with pricing');
     }
 }

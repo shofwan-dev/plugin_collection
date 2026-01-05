@@ -22,16 +22,17 @@ class HandlePaddleTransaction
         $billable = $event->billable;
         
         $customData = $payload['data']['custom_data'] ?? [];
-        $planId = $customData['plan_id'] ?? null;
+        $productId = $customData['product_id'] ?? null;
+        $whatsappNumber = $customData['whatsapp_number'] ?? null;
         
-        if (!$planId) {
-            Log::warning('Paddle Transaction missing plan_id in custom_data', ['payload' => $payload]);
+        if (!$productId) {
+            Log::warning('Paddle Transaction missing product_id in custom_data', ['payload' => $payload]);
             return;
         }
 
-        $plan = Plan::find($planId);
-        if (!$plan) {
-            Log::error('Paddle Transaction: Plan not found', ['plan_id' => $planId]);
+        $product = \App\Models\Product::find($productId);
+        if (!$product) {
+            Log::error('Paddle Transaction: Product not found', ['product_id' => $productId]);
             return;
         }
 
@@ -41,9 +42,10 @@ class HandlePaddleTransaction
             [
                 'order_number' => Order::generateOrderNumber(),
                 'user_id' => $billable->id,
-                'plan_id' => $plan->id,
-                'customer_name' => $billable->name,
-                'customer_email' => $billable->email,
+                'product_id' => $product->id,
+                'customer_name' => $customData['customer_name'] ?? $payload['data']['customer']['name'] ?? $billable->name,
+                'customer_email' => $customData['customer_email'] ?? $payload['data']['customer']['email'] ?? $billable->email,
+                'whatsapp_number' => $whatsappNumber,
                 'amount' => $transaction->amount,
                 'currency' => $transaction->currency,
                 'status' => 'completed',
@@ -56,22 +58,33 @@ class HandlePaddleTransaction
         if (!$order->license) {
             $license = License::create([
                 'license_key' => $this->generateLicenseKey(),
-                'plan_id' => $plan->id,
+                'product_id' => $product->id,
                 'order_id' => $order->id,
                 'user_id' => $billable->id,
                 'status' => 'active',
-                'max_domains' => $plan->max_domains,
+                'max_domains' => $product->max_domains,
                 'activated_domains' => [],
-                'expires_at' => now()->addYear(),
+                'expires_at' => $product->valid_days ? now()->addDays($product->valid_days) : null,
             ]);
 
             // Send WhatsApp notifications
             try {
-                $whatsapp = app(WhatsAppService::class);
+                $whatsapp = app(\App\Services\WhatsAppService::class);
                 $whatsapp->sendPaymentSuccessNotification($order);
                 $whatsapp->sendAdminPaymentSuccessNotification($order);
             } catch (\Exception $e) {
                 Log::error('Failed to send WhatsApp notifications after Paddle payment', [
+                    'order_id' => $order->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+
+            // Send Email notification
+            try {
+                \Illuminate\Support\Facades\Mail::to($order->customer_email)->send(new \App\Mail\LicenseActivatedMail($license));
+                \Illuminate\Support\Facades\Mail::to($order->customer_email)->send(new \App\Mail\OrderCreatedMail($order));
+            } catch (\Exception $e) {
+                Log::error('Failed to send email notifications after Paddle payment', [
                     'order_id' => $order->id,
                     'error' => $e->getMessage(),
                 ]);

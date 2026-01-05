@@ -22,7 +22,7 @@
             <h3>Order Details:</h3>
             <ul>
                 <li><strong>Order Number:</strong> {{ $order->order_number }}</li>
-                <li><strong>Plan:</strong> {{ $order->plan->name }}</li>
+                <li><strong>Product:</strong> {{ $order->product->name }}</li>
                 <li><strong>Amount:</strong> ${{ number_format($order->amount, 2) }}</li>
                 <li><strong>Status:</strong> {{ ucfirst($order->status) }}</li>
             </ul>

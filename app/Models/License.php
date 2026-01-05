@@ -16,6 +16,7 @@ class License extends Model
         'envato_verified_at',
         'envato_purchase_data',
         'plan_id',
+        'product_id',
         'order_id',
         'user_id',
         'status',
@@ -39,6 +40,14 @@ class License extends Model
     public function plan(): BelongsTo
     {
         return $this->belongsTo(Plan::class);
+    }
+
+    /**
+     * Get the product for this license
+     */
+    public function product(): BelongsTo
+    {
+        return $this->belongsTo(Product::class);
     }
 
     /**

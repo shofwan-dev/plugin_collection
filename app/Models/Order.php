@@ -14,8 +14,10 @@ class Order extends Model
         'paddle_subscription_id',
         'user_id',
         'plan_id',
+        'product_id',
         'customer_name',
         'customer_email',
+        'whatsapp_number',
         'amount',
         'currency',
         'status',
@@ -38,6 +40,14 @@ class Order extends Model
     public function plan(): BelongsTo
     {
         return $this->belongsTo(Plan::class);
+    }
+
+    /**
+     * Get the product for this order
+     */
+    public function product(): BelongsTo
+    {
+        return $this->belongsTo(Product::class);
     }
 
     /**

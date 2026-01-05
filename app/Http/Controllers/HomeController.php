@@ -39,12 +39,7 @@ class HomeController extends Controller
      */
     public function product(Product $product): View
     {
-        $plans = \App\Models\Plan::where('product_id', $product->id)
-                    ->active()
-                    ->ordered()
-                    ->get();
-
-        return view('product', compact('product', 'plans'));
+        return view('product', compact('product'));
     }
 
     /**

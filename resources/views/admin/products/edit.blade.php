@@ -92,6 +92,83 @@
                                 @enderror
                             </div>
 
+                            <!-- Price -->
+                            <div class="col-md-6">
+                                <label for="price" class="form-label fw-semibold">
+                                    Price (USD) <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" 
+                                           class="form-control @error('price') is-invalid @enderror" 
+                                           id="price" 
+                                           name="price" 
+                                           value="{{ old('price', $product->price) }}" 
+                                           placeholder="0.00"
+                                           step="0.01"
+                                           min="0"
+                                           required>
+                                    @error('price')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                <small class="text-muted">Set to 0 for free products</small>
+                            </div>
+
+                            <!-- Max Domains -->
+                            <div class="col-md-6">
+                                <label for="max_domains" class="form-label fw-semibold">
+                                    Max Domains <span class="text-danger">*</span>
+                                </label>
+                                <input type="number" 
+                                       class="form-control @error('max_domains') is-invalid @enderror" 
+                                       id="max_domains" 
+                                       name="max_domains" 
+                                       value="{{ old('max_domains', $product->max_domains) }}" 
+                                       placeholder="1"
+                                       min="-1"
+                                       required>
+                                @error('max_domains')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <small class="text-muted">Use -1 for unlimited domains</small>
+                            </div>
+
+                            <!-- Paddle Price ID -->
+                            <div class="col-md-6">
+                                <label for="paddle_price_id" class="form-label fw-semibold">
+                                    Paddle Price ID <span class="text-muted">(Optional)</span>
+                                </label>
+                                <input type="text" 
+                                       class="form-control font-monospace @error('paddle_price_id') is-invalid @enderror" 
+                                       id="paddle_price_id" 
+                                       name="paddle_price_id" 
+                                       value="{{ old('paddle_price_id', $product->paddle_price_id) }}" 
+                                       placeholder="pri_01...">
+                                @error('paddle_price_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <small class="text-muted">From Paddle &rarr; Catalog &rarr; Prices (required for checkout)</small>
+                            </div>
+
+                            <!-- Paddle Product ID -->
+                            <div class="col-md-6">
+                                <label for="paddle_product_id" class="form-label fw-semibold">
+                                    Paddle Product ID <span class="text-muted">(Optional)</span>
+                                </label>
+                                <input type="text" 
+                                       class="form-control font-monospace @error('paddle_product_id') is-invalid @enderror" 
+                                       id="paddle_product_id" 
+                                       name="paddle_product_id" 
+                                       value="{{ old('paddle_product_id', $product->paddle_product_id) }}" 
+                                       placeholder="pro_01...">
+                                @error('paddle_product_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <small class="text-muted">From Paddle &rarr; Catalog &rarr; Products</small>
+                            </div>
+
+
                             <!-- Active Status -->
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold d-block">Status</label>
@@ -207,6 +284,51 @@
                     </div>
                 </div>
 
+                <!-- Product Image -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white border-0 py-3">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="bi bi-image text-info me-2"></i> Product Image
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        @if($product->image)
+                        <!-- Current Image -->
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Current Image</label>
+                            <div class="border rounded p-3 bg-light">
+                                <img src="{{ asset('storage/' . $product->image) }}" 
+                                     alt="{{ $product->name }}" 
+                                     class="img-fluid rounded"
+                                     style="max-height: 200px; object-fit: cover;">
+                            </div>
+                        </div>
+                        @endif
+
+                        <!-- Upload New Image -->
+                        <div class="mb-0">
+                            <label for="image" class="form-label fw-semibold">
+                                Upload New Image {{ $product->image ? '(Optional)' : '' }}
+                            </label>
+                            <input type="file" 
+                                   class="form-control @error('image') is-invalid @enderror" 
+                                   id="image" 
+                                   name="image" 
+                                   accept="image/jpeg,image/jpg,image/png,image/webp"
+                                   onchange="previewImage(this, 'imagePreview')">
+                            <small class="text-muted d-block mt-1">
+                                Accepted: JPG, PNG, WEBP (Max: 2MB)
+                            </small>
+                            @error('image')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                            
+                            <!-- Image Preview -->
+                            <div id="imagePreview" class="mt-3"></div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Product Stats -->
                 <div class="card border-0 shadow-sm">
                     <div class="card-header bg-white border-0 py-3">
@@ -234,89 +356,13 @@
             </div>
         </div>
 
-
-        <!-- Pricing Plans Section -->
+        <!-- Dynamic Content Sections (Benefits, Testimonials, SEO) -->
         <div class="row mt-4">
             <div class="col-12">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-white border-0 py-3">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0 fw-bold">
-                                <i class="bi bi-tag text-success me-2"></i> Pricing Plans
-                            </h5>
-                            <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2">
-                                {{ $product->plans->count() }} {{ $product->plans->count() === 1 ? 'Plan' : 'Plans' }}
-                            </span>
-                        </div>
-                    </div>
-                    <div class="card-body p-4">
-                        @if($product->plans->count() > 0)
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Plan Name</th>
-                                        <th>Price</th>
-                                        <th>Max Domains</th>
-                                        <th>Status</th>
-                                        <th class="text-center">Popular</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($product->plans as $plan)
-                                    <tr>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <i class="bi bi-box-seam text-primary fs-5 me-2"></i>
-                                                <span class="fw-semibold">{{ $plan->name }}</span>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <span class="fw-bold text-success fs-5">${{ number_format($plan->price, 2) }}</span>
-                                        </td>
-                                        <td>
-                                            @if($plan->max_domains === -1)
-                                            <span class="badge bg-info px-3 py-2">
-                                                <i class="bi bi-infinity me-1"></i> Unlimited
-                                            </span>
-                                            @else
-                                            <span class="badge bg-secondary px-3 py-2">{{ $plan->max_domains }}</span>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            @if($plan->is_active)
-                                            <span class="badge bg-success px-3 py-2">
-                                                <i class="bi bi-check-circle me-1"></i> Active
-                                            </span>
-                                            @else
-                                            <span class="badge bg-secondary px-3 py-2">
-                                                <i class="bi bi-x-circle me-1"></i> Inactive
-                                            </span>
-                                            @endif
-                                        </td>
-                                        <td class="text-center">
-                                            @if($plan->is_popular)
-                                            <span class="badge bg-warning text-dark px-3 py-2">⭐ Popular</span>
-                                            @else
-                                            <span class="text-muted">-</span>
-                                            @endif
-                                        </td>
-                                    </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                        @else
-                        <div class="text-center py-5">
-                            <i class="bi bi-tag fs-1 text-muted mb-3 d-block"></i>
-                            <h6 class="text-muted mb-2">No Pricing Plans Yet</h6>
-                            <p class="text-muted small">Plans are managed separately in Plans section</p>
-                        </div>
-                        @endif
-                    </div>
-                </div>
+                @include('admin.products._dynamic_content')
             </div>
         </div>
+
         <!-- Action Buttons -->
         <div class="row mt-4">
             <div class="col-12">
@@ -336,4 +382,128 @@
         </div>
     </form>
 </div>
+
+@push('scripts')
+<script>
+function previewImage(input, previewId) {
+    const preview = document.getElementById(previewId);
+    preview.innerHTML = '';
+    
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            const div = document.createElement('div');
+            div.className = 'border rounded p-3 bg-light';
+            
+            const label = document.createElement('p');
+            label.className = 'text-primary small mb-2 fw-semibold';
+            label.textContent = 'Preview:';
+            
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.className = 'img-fluid rounded';
+            img.style.maxHeight = '200px';
+            img.style.objectFit = 'cover';
+            img.alt = 'Preview';
+            
+            div.appendChild(label);
+            div.appendChild(img);
+            preview.appendChild(div);
+        }
+        
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+// Benefits Management
+let benefitIndex = {{ $product->benefits ? count($product->benefits) : 0 }};
+
+function addBenefit() {
+    const container = document.getElementById('benefits-container');
+    const benefitHtml = `
+        <div class="benefit-item border rounded p-3 mb-3" data-index="${benefitIndex}">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <strong>Benefit #${benefitIndex + 1}</strong>
+                <button type="button" class="btn btn-sm btn-danger" onclick="removeBenefit(this)">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+            <div class="row g-2">
+                <div class="col-md-6">
+                    <label class="form-label small">Title</label>
+                    <input type="text" class="form-control" name="benefits[${benefitIndex}][title]" placeholder="e.g., Instant Setup">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small">Icon (Bootstrap Icon)</label>
+                    <input type="text" class="form-control" name="benefits[${benefitIndex}][icon]" value="check-circle-fill" placeholder="e.g., rocket-takeoff-fill">
+                </div>
+                <div class="col-12">
+                    <label class="form-label small">Description</label>
+                    <textarea class="form-control" name="benefits[${benefitIndex}][description]" rows="2" placeholder="Describe this benefit..."></textarea>
+                </div>
+            </div>
+        </div>
+    `;
+    container.insertAdjacentHTML('beforeend', benefitHtml);
+    benefitIndex++;
+}
+
+function removeBenefit(button) {
+    if (confirm('Remove this benefit?')) {
+        button.closest('.benefit-item').remove();
+    }
+}
+
+// Testimonials Management
+let testimonialIndex = {{ $product->testimonials ? count($product->testimonials) : 0 }};
+
+function addTestimonial() {
+    const container = document.getElementById('testimonials-container');
+    const testimonialHtml = `
+        <div class="testimonial-item border rounded p-3 mb-3" data-index="${testimonialIndex}">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <strong>Testimonial #${testimonialIndex + 1}</strong>
+                <button type="button" class="btn btn-sm btn-danger" onclick="removeTestimonial(this)">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+            <div class="row g-2">
+                <div class="col-md-6">
+                    <label class="form-label small">Customer Name</label>
+                    <input type="text" class="form-control" name="testimonials[${testimonialIndex}][name]" placeholder="e.g., John Doe">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small">Position/Company</label>
+                    <input type="text" class="form-control" name="testimonials[${testimonialIndex}][position]" placeholder="e.g., CEO at Company">
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label small">Rating (1-5)</label>
+                    <select class="form-select" name="testimonials[${testimonialIndex}][rating]">
+                        <option value="5" selected>5 Stars</option>
+                        <option value="4">4 Stars</option>
+                        <option value="3">3 Stars</option>
+                        <option value="2">2 Stars</option>
+                        <option value="1">1 Star</option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <label class="form-label small">Testimonial Content</label>
+                    <textarea class="form-control" name="testimonials[${testimonialIndex}][content]" rows="3" placeholder="What did the customer say..."></textarea>
+                </div>
+            </div>
+        </div>
+    `;
+    container.insertAdjacentHTML('beforeend', testimonialHtml);
+    testimonialIndex++;
+}
+
+function removeTestimonial(button) {
+    if (confirm('Remove this testimonial?')) {
+        button.closest('.testimonial-item').remove();
+    }
+}
+
+</script>
+@endpush
 @endsection

@@ -118,7 +118,7 @@ class WhatsAppService
         $message .= "📦 *Detail Pesanan*\n";
         $message .= "━━━━━━━━━━━━━━━━\n";
         $message .= "• Order ID: #{$order->id}\n";
-        $message .= "• Produk: {$order->plan->name}\n";
+        $message .= "• Produk: {$order->product->name}\n";
         $message .= "• Total: " . $order->formatted_amount . "\n\n";
         $message .= "💳 *Langkah Selanjutnya:*\n";
         $message .= "Silakan lakukan pembayaran untuk mengaktifkan license Anda.\n\n";
@@ -127,7 +127,7 @@ class WhatsAppService
         $message .= "⏰ Selesaikan pembayaran dalam 24 jam agar pesanan tidak dibatalkan otomatis.\n\n";
         $message .= "Terima kasih! 🙏";
 
-        return $this->sendMessage($order->customer_email, $message);
+        return $this->sendMessage($order->whatsapp_number ?? $order->customer_email, $message);
     }
 
     /**
@@ -138,7 +138,7 @@ class WhatsAppService
         $message = "*Alhamdulillah! Pembayaran Berhasil* 🎊\n\n";
         $message .= "✅ *PEMBAYARAN DITERIMA*\n";
         $message .= "━━━━━━━━━━━━━━━━\n\n";
-        $message .= "Pembayaran Anda untuk *{$order->plan->name}* telah kami terima dengan total {$order->formatted_amount}.\n\n";
+        $message .= "Pembayaran Anda untuk *{$order->product->name}* telah kami terima dengan total {$order->formatted_amount}.\n\n";
         $message .= "📋 *License Key Anda:*\n";
         if ($order->license) {
             $message .= "`{$order->license->license_key}`\n\n";
@@ -151,7 +151,7 @@ class WhatsAppService
         $message .= url('/dashboard/licenses') . "\n\n";
         $message .= "Terima kasih atas kepercayaannya! 🙏✨";
 
-        return $this->sendMessage($order->customer_email, $message);
+        return $this->sendMessage($order->whatsapp_number ?? $order->customer_email, $message);
     }
 
     /**
@@ -161,14 +161,14 @@ class WhatsAppService
     {
         $message = "Halo *{$order->customer_name}*,\n\n";
         $message .= "⏰ *Link Pembayaran Expired*\n\n";
-        $message .= "Link pembayaran untuk *{$order->plan->name}* (Order #{$order->id}) telah expired.\n\n";
+        $message .= "Link pembayaran untuk *{$order->product->name}* (Order #{$order->id}) telah expired.\n\n";
         $message .= "📌 *Tindakan yang diperlukan:*\n";
         $message .= "Silakan hubungi admin kami untuk membuat link pembayaran baru atau melakukan order ulang.\n\n";
         $message .= "Contact Admin:\n";
         $message .= url('/contact') . "\n\n";
         $message .= "Mohon maaf atas ketidaknyamanannya. 🙏";
 
-        return $this->sendMessage($order->customer_email, $message);
+        return $this->sendMessage($order->whatsapp_number ?? $order->customer_email, $message);
     }
 
     /**
@@ -178,12 +178,12 @@ class WhatsAppService
     {
         $message = "Halo *{$order->customer_name}*,\n\n";
         $message .= "💰 *Status Refund*\n\n";
-        $message .= "Pembayaran untuk *{$order->plan->name}* (Order #{$order->id}) telah di-refund sebesar {$order->formatted_amount}.\n\n";
+        $message .= "Pembayaran untuk *{$order->product->name}* (Order #{$order->id}) telah di-refund sebesar {$order->formatted_amount}.\n\n";
         $message .= "Dana akan kembali ke rekening/metode pembayaran Anda dalam 3-7 hari kerja.\n\n";
         $message .= "Jika ada pertanyaan, silakan hubungi admin kami.\n\n";
         $message .= "Terima kasih atas pengertiannya. 🙏";
 
-        return $this->sendMessage($order->customer_email, $message);
+        return $this->sendMessage($order->whatsapp_number ?? $order->customer_email, $message);
     }
 
     /**
@@ -203,11 +203,11 @@ class WhatsAppService
         $message .= "Halo *{$order->customer_name}*,\n\n";
         $message .= ($statusMessages[$status] ?? 'Status pesanan telah diupdate.') . "\n\n";
         $message .= "*Detail Pesanan:*\n";
-        $message .= "Produk: {$order->plan->name}\n";
+        $message .= "Produk: {$order->product->name}\n";
         $message .= "Total: {$order->formatted_amount}\n\n";
         $message .= "Terima kasih! 🙏";
 
-        return $this->sendMessage($order->customer_email, $message);
+        return $this->sendMessage($order->whatsapp_number ?? $order->customer_email, $message);
     }
 
     /**
@@ -228,7 +228,8 @@ class WhatsAppService
         $message .= "• Order ID: #{$order->id}\n";
         $message .= "• Customer: *{$order->customer_name}*\n";
         $message .= "• Email: {$order->customer_email}\n";
-        $message .= "• Produk: *{$order->plan->name}*\n";
+        $message .= "• WhatsApp: " . ($order->whatsapp_number ?? 'Not provided') . "\n";
+        $message .= "• Produk: *{$order->product->name}*\n";
         $message .= "• Total: *{$order->formatted_amount}*\n\n";
         $message .= "💳 *Status:*\n";
         $message .= "Menunggu pembayaran dari customer\n\n";
@@ -258,7 +259,8 @@ class WhatsAppService
         $message .= "• Order ID: #{$order->id}\n";
         $message .= "• Customer: *{$order->customer_name}*\n";
         $message .= "• Email: {$order->customer_email}\n";
-        $message .= "• Produk: *{$order->plan->name}*\n";
+        $message .= "• WhatsApp: " . ($order->whatsapp_number ?? 'Not provided') . "\n";
+        $message .= "• Produk: *{$order->product->name}*\n";
         $message .= "• Total: *{$order->formatted_amount}*\n\n";
         $message .= "💳 *Pembayaran:*\n";
         $message .= "• Status: LUNAS ✅\n";
