@@ -85,7 +85,15 @@
                     <div class="card-body p-4 text-center">
                         <div class="benefit-icon mb-4">
                             <div class="icon-wrapper d-inline-flex align-items-center justify-content-center rounded-circle bg-primary bg-opacity-10" style="width: 80px; height: 80px;">
-                                <i class="bi bi-{{ $benefit['icon'] ?? 'check-circle-fill' }} text-primary" style="font-size: 2.5rem;"></i>
+                                @php
+                                    $iconName = $benefit['icon'] ?? 'check-circle-fill';
+                                    // Remove 'bi-' prefix if present
+                                    $iconName = str_replace('bi-', '', $iconName);
+                                    // Remove 'bi ' prefix if present (with space)
+                                    $iconName = str_replace('bi ', '', $iconName);
+                                    $iconName = trim($iconName);
+                                @endphp
+                                <i class="bi bi-{{ $iconName }} text-primary" style="font-size: 2.5rem;"></i>
                             </div>
                         </div>
                         <h4 class="fw-bold mb-3">{{ $benefit['title'] ?? 'Benefit' }}</h4>

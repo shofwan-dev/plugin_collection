@@ -28,7 +28,8 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label small">Icon (Bootstrap Icon)</label>
-                            <input type="text" class="form-control" name="benefits[{{ $index }}][icon]" value="{{ $benefit['icon'] ?? 'check-circle-fill' }}" placeholder="e.g., rocket-takeoff-fill">
+                            <input type="text" class="form-control" name="benefits[{{ $index }}][icon]" value="{{ $benefit['icon'] ?? 'check-circle-fill' }}" placeholder="rocket-takeoff-fill">
+                            <small class="text-muted">Just the icon name, without 'bi-' prefix</small>
                         </div>
                         <div class="col-12">
                             <label class="form-label small">Description</label>
@@ -41,7 +42,9 @@
         </div>
         <small class="text-muted">
             <i class="bi bi-info-circle"></i> Benefits will be displayed on the landing page. 
-            <a href="https://icons.getbootstrap.com/" target="_blank">Browse Bootstrap Icons</a>
+            <a href="https://icons.getbootstrap.com/" target="_blank" class="text-primary">Browse Bootstrap Icons</a>
+            <br>
+            <strong>Examples:</strong> rocket-takeoff-fill, shield-check, lightning-charge-fill, heart-fill, award-fill
         </small>
     </div>
 </div>
