@@ -19,20 +19,22 @@ class DatabaseSeeder extends Seeder
     {
         // Create admin user only if not exists
         if (!User::where('email', 'admin@cf7whatsapp.com')->exists()) {
-            User::factory()->create([
+            User::create([
                 'name' => 'Admin',
                 'email' => 'admin@cf7whatsapp.com',
                 'password' => bcrypt('password'),
+                'email_verified_at' => now(),
                 'is_admin' => true,
             ]);
         }
 
-        // Optionally create test customer user only if not exists
-        if (!User::where('email', 'customer@example.com')->exists()) {
-            User::factory()->create([
+        // Optionally create test customer user only if not exists (only in development)
+        if (app()->environment('local') && !User::where('email', 'customer@example.com')->exists()) {
+            User::create([
                 'name' => 'Test Customer',
                 'email' => 'customer@example.com',
                 'password' => bcrypt('password'),
+                'email_verified_at' => now(),
                 'is_admin' => false,
             ]);
         }
