@@ -89,6 +89,10 @@ Route::middleware(['auth', 'verified', \App\Http\Middleware\IsAdmin::class])->pr
     // Landing Pages
     Route::resource('landing-pages', \App\Http\Controllers\Admin\LandingPageController::class);
     
+    // Fallback POST route for Nginx servers that don't handle PUT properly
+    Route::post('landing-pages/{landing_page}/update', [\App\Http\Controllers\Admin\LandingPageController::class, 'update'])
+        ->name('landing-pages.update-post');
+    
     // Settings
     Route::prefix('settings')->name('settings.')->group(function () {
         Route::get('/', [AdminSettingController::class, 'index'])->name('index');
