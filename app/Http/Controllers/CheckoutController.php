@@ -34,15 +34,13 @@ class CheckoutController extends Controller
             $user = Auth::user();
             
             // Prepare checkout using Cashier
-            // We use the price ID and only pass the minimum required data to avoid conflict
+            // Separate customer info from custom data to avoid conflicts
             $checkout = $user->checkout([$product->paddle_price_id])
                 ->returnTo(route('checkout.success'))
                 ->customData([
                     'product_id' => $product->id,
                     'user_id' => $user->id,
-                    'customer_name' => $user->name,
-                    'customer_email' => $user->email,
-                    'whatsapp_number' => $user->phone ?? '',
+                    'whatsapp_number' => '', // Will be updated via JavaScript
                 ]);
 
             session(['last_product_id' => $product->id]);

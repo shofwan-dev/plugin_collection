@@ -83,12 +83,10 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const paddleButton = document.querySelector('.paddle_button');
-        const customerNameInput = document.getElementById('customer_name');
-        const emailInput = document.getElementById('email');
         const whatsappInput = document.getElementById('whatsapp_number');
 
         function updatePaddleData() {
-            if (!paddleButton) return;
+            if (!paddleButton || !whatsappInput) return;
 
             // Get existing custom data
             let customData = {};
@@ -101,18 +99,17 @@
                 console.error('Error parsing existing custom data', e);
             }
 
-            // Update with form values
+            // Only update whatsapp_number in custom data
+            // customer_name and customer_email are handled by Paddle automatically
             customData.whatsapp_number = whatsappInput.value;
-            customData.customer_name = customerNameInput.value;
-            customData.customer_email = emailInput.value;
 
             // Set modified custom data back to button
             paddleButton.setAttribute('data-custom-data', JSON.stringify(customData));
+            
+            console.log('Updated Paddle custom data:', customData);
         }
 
-        // Listen for changes
-        customerNameInput.addEventListener('input', updatePaddleData);
-        emailInput.addEventListener('input', updatePaddleData);
+        // Listen for changes on whatsapp number only
         whatsappInput.addEventListener('input', updatePaddleData);
 
         // Initial run
