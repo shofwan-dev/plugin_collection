@@ -89,7 +89,14 @@
     
     console.log('Initializing Paddle with config:', paddleConfig);
     
-    Paddle.Initialize(paddleConfig);
+    // Validate token
+    if (!paddleConfig.token || paddleConfig.token === '') {
+        console.error('PADDLE TOKEN MISSING! Check .env file for PADDLE_CLIENT_TOKEN');
+        alert('Paddle configuration error. Please contact administrator.\n\nMissing: PADDLE_CLIENT_TOKEN in .env');
+        // Don't initialize if token is missing
+    } else {
+        Paddle.Initialize(paddleConfig);
+    }
     
     // Form validation
     const whatsappInput = document.getElementById('whatsapp_number');
