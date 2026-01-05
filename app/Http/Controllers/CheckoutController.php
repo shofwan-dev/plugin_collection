@@ -34,13 +34,12 @@ class CheckoutController extends Controller
             $user = Auth::user();
             
             // Prepare checkout using Cashier
-            // Separate customer info from custom data to avoid conflicts
+            // Only send essential data - customer info is handled by Paddle automatically
             $checkout = $user->checkout([$product->paddle_price_id])
                 ->returnTo(route('checkout.success'))
                 ->customData([
                     'product_id' => $product->id,
                     'user_id' => $user->id,
-                    'whatsapp_number' => '', // Will be updated via JavaScript
                 ]);
 
             session(['last_product_id' => $product->id]);
@@ -90,6 +89,27 @@ class CheckoutController extends Controller
             ->first();
 
         return view('checkout.success', compact('order'));
+    }
+
+    /**
+     * Save checkout data to session
+     */
+    public function saveData(Request $request)
+    {
+        $validated = $request->validate([
+            'whatsapp_number' => 'nullable|string|max:20',
+            'customer_name' => 'nullable|string|max:255',
+            'customer_email' => 'nullable|email|max:255',
+        ]);
+
+        // Save to session for later use in webhook
+        session([
+            'checkout_whatsapp' => $validated['whatsapp_number'] ?? '',
+            'checkout_customer_name' => $validated['customer_name'] ?? '',
+            'checkout_customer_email' => $validated['customer_email'] ?? '',
+        ]);
+
+        return response()->json(['success' => true]);
     }
 
     /**

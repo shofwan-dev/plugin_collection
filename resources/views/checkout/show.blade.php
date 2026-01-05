@@ -81,39 +81,45 @@
 @paddleJS
 
 <script>
+    // Form validation and data saving before Paddle checkout
     document.addEventListener('DOMContentLoaded', function() {
-        const paddleButton = document.querySelector('.paddle_button');
         const whatsappInput = document.getElementById('whatsapp_number');
-
-        function updatePaddleData() {
-            if (!paddleButton || !whatsappInput) return;
-
-            // Get existing custom data
-            let customData = {};
-            try {
-                const existingData = paddleButton.getAttribute('data-custom-data');
-                if (existingData) {
-                    customData = JSON.parse(existingData);
-                }
-            } catch (e) {
-                console.error('Error parsing existing custom data', e);
-            }
-
-            // Only update whatsapp_number in custom data
-            // customer_name and customer_email are handled by Paddle automatically
-            customData.whatsapp_number = whatsappInput.value;
-
-            // Set modified custom data back to button
-            paddleButton.setAttribute('data-custom-data', JSON.stringify(customData));
-            
-            console.log('Updated Paddle custom data:', customData);
+        const customerNameInput = document.getElementById('customer_name');
+        const emailInput = document.getElementById('email');
+        const paddleButton = document.querySelector('.paddle_button');
+        
+        // Simple validation for WhatsApp number
+        if (whatsappInput) {
+            whatsappInput.addEventListener('input', function() {
+                // Remove non-numeric characters
+                this.value = this.value.replace(/[^0-9]/g, '');
+            });
         }
-
-        // Listen for changes on whatsapp number only
-        whatsappInput.addEventListener('input', updatePaddleData);
-
-        // Initial run
-        updatePaddleData();
+        
+        // Before Paddle opens, save data to session
+        if (paddleButton) {
+            paddleButton.addEventListener('click', function(e) {
+                // Save to session via AJAX
+                const formData = {
+                    whatsapp_number: whatsappInput.value,
+                    customer_name: customerNameInput.value,
+                    customer_email: emailInput.value,
+                    _token: document.querySelector('meta[name="csrf-token"]').content
+                };
+                
+                // Send to server to save in session
+                fetch('{{ route("checkout.save-data") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': formData._token
+                    },
+                    body: JSON.stringify(formData)
+                }).catch(err => console.error('Error saving checkout data:', err));
+            });
+        }
+        
+        console.log('Checkout page loaded. Paddle will handle payment processing.');
     });
 </script>
 @endpush

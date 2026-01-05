@@ -22,6 +22,7 @@ Route::get('/contact', [HomeController::class, 'contact'])->name('contact');
 Route::middleware('auth')->group(function () {
     Route::get('/checkout/{product:slug}', [CheckoutController::class, 'show'])->name('checkout.show');
     Route::post('/checkout/{product:slug}', [CheckoutController::class, 'process'])->name('checkout.process');
+    Route::post('/checkout/save-data', [CheckoutController::class, 'saveData'])->name('checkout.save-data');
 });
 Route::get('/checkout/success', [CheckoutController::class, 'success'])->name('checkout.success');
 Route::get('/checkout/cancel', [CheckoutController::class, 'cancel'])->name('checkout.cancel');
