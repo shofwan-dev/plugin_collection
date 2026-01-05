@@ -33,6 +33,12 @@ class CheckoutController extends Controller
         try {
             $user = Auth::user();
             
+            // Get Paddle settings from database
+            $paddleSettings = [
+                'client_token' => \App\Models\Setting::get('paddle_client_token', config('cashier.client_token')),
+                'sandbox' => \App\Models\Setting::get('paddle_sandbox', config('cashier.sandbox', true)),
+            ];
+            
             // Prepare checkout using Cashier
             // Only send essential data - customer info is handled by Paddle automatically
             $checkout = $user->checkout([$product->paddle_price_id])
@@ -44,7 +50,7 @@ class CheckoutController extends Controller
 
             session(['last_product_id' => $product->id]);
 
-            $response = response()->view('checkout.show', compact('product', 'checkout'));
+            $response = response()->view('checkout.show', compact('product', 'checkout', 'paddleSettings'));
             
             // Add CSP headers to allow framing by Paddle and allow localhost
             $response->headers->set(

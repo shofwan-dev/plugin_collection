@@ -83,8 +83,8 @@
 <script>
     // Initialize Paddle
     const paddleConfig = {
-        environment: '{{ config("cashier.sandbox") ? "sandbox" : "production" }}',
-        token: '{{ config("cashier.client_token") }}',
+        environment: '{{ $paddleSettings["sandbox"] ? "sandbox" : "production" }}',
+        token: '{{ $paddleSettings["client_token"] }}',
     };
     
     console.log('Initializing Paddle with config:', paddleConfig);
