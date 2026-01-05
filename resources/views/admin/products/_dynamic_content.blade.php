@@ -12,7 +12,7 @@
     </div>
     <div class="card-body p-4">
         <div id="benefits-container">
-            @if($product->benefits && count($product->benefits) > 0)
+            @if(isset($product) && $product->benefits && count($product->benefits) > 0)
                 @foreach($product->benefits as $index => $benefit)
                 <div class="benefit-item border rounded p-3 mb-3" data-index="{{ $index }}">
                     <div class="d-flex justify-content-between align-items-center mb-2">
@@ -60,7 +60,7 @@
     </div>
     <div class="card-body p-4">
         <div id="testimonials-container">
-            @if($product->testimonials && count($product->testimonials) > 0)
+            @if(isset($product) && $product->testimonials && count($product->testimonials) > 0)
                 @foreach($product->testimonials as $index => $testimonial)
                 <div class="testimonial-item border rounded p-3 mb-3" data-index="{{ $index }}">
                     <div class="d-flex justify-content-between align-items-center mb-2">
@@ -111,7 +111,7 @@
     <div class="card-body p-4">
         <div class="mb-3">
             <label for="meta_title" class="form-label fw-semibold">Meta Title</label>
-            <input type="text" class="form-control @error('meta_title') is-invalid @enderror" id="meta_title" name="meta_title" value="{{ old('meta_title', $product->meta_title) }}" placeholder="SEO optimized title" maxlength="60">
+            <input type="text" class="form-control @error('meta_title') is-invalid @enderror" id="meta_title" name="meta_title" value="{{ old('meta_title', isset($product) ? $product->meta_title : '') }}" placeholder="SEO optimized title" maxlength="60">
             <small class="text-muted">Recommended: 50-60 characters</small>
             @error('meta_title')
             <div class="invalid-feedback">{{ $message }}</div>
@@ -119,7 +119,7 @@
         </div>
         <div class="mb-0">
             <label for="meta_description" class="form-label fw-semibold">Meta Description</label>
-            <textarea class="form-control @error('meta_description') is-invalid @enderror" id="meta_description" name="meta_description" rows="3" placeholder="SEO optimized description" maxlength="160">{{ old('meta_description', $product->meta_description) }}</textarea>
+            <textarea class="form-control @error('meta_description') is-invalid @enderror" id="meta_description" name="meta_description" rows="3" placeholder="SEO optimized description" maxlength="160">{{ old('meta_description', isset($product) ? $product->meta_description : '') }}</textarea>
             <small class="text-muted">Recommended: 150-160 characters</small>
             @error('meta_description')
             <div class="invalid-feedback">{{ $message }}</div>
