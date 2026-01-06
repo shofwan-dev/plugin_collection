@@ -324,6 +324,8 @@ class SettingController extends Controller
 
             $productCount = 0;
             $priceCount = 0;
+            $productsFetchError = null;
+            $pricesFetchError = null;
             
             if ($productsResponse->successful()) {
                 $productsData = $productsResponse->json();
@@ -331,6 +333,7 @@ class SettingController extends Controller
                 
                 Log::channel('daily')->info('Paddle Products Fetched', [
                     'count' => $productCount,
+                    'data' => $productsData
                 ]);
 
                 // Test 3: Fetch prices
@@ -347,8 +350,23 @@ class SettingController extends Controller
                     
                     Log::channel('daily')->info('Paddle Prices Fetched', [
                         'count' => $priceCount,
+                        'data' => $pricesData
+                    ]);
+                } else {
+                    // Prices fetch failed
+                    $pricesFetchError = $pricesResponse->json();
+                    Log::channel('daily')->error('Paddle Prices Fetch Failed', [
+                        'status' => $pricesResponse->status(),
+                        'error' => $pricesFetchError
                     ]);
                 }
+            } else {
+                // Products fetch failed
+                $productsFetchError = $productsResponse->json();
+                Log::channel('daily')->error('Paddle Products Fetch Failed', [
+                    'status' => $productsResponse->status(),
+                    'error' => $productsFetchError
+                ]);
             }
 
             // Success with detailed info
@@ -366,13 +384,47 @@ class SettingController extends Controller
                 $successMessage .= '🏢 Seller ID: <strong>' . $sellerId . '</strong><br>';
             }
             
-            $successMessage .= '📦 Products: <strong>' . $productCount . '</strong><br>';
-            $successMessage .= '💰 Prices: <strong>' . $priceCount . '</strong><br>';
+            // Products count with error detail if 0
+            $successMessage .= '📦 Products: <strong>' . $productCount . '</strong>';
+            if ($productCount === 0 && $productsFetchError) {
+                $errorDetail = $productsFetchError['error']['detail'] ?? 'Unknown error';
+                $errorCode = $productsFetchError['error']['code'] ?? 'unknown';
+                $successMessage .= ' <small class="text-danger">(Error: ' . htmlspecialchars($errorDetail) . ')</small>';
+            }
+            $successMessage .= '<br>';
+            
+            // Prices count with error detail if 0
+            $successMessage .= '💰 Prices: <strong>' . $priceCount . '</strong>';
+            if ($priceCount === 0 && $pricesFetchError) {
+                $errorDetail = $pricesFetchError['error']['detail'] ?? 'Unknown error';
+                $successMessage .= ' <small class="text-danger">(Error: ' . htmlspecialchars($errorDetail) . ')</small>';
+            }
+            $successMessage .= '<br>';
             
             if ($clientToken) {
                 $successMessage .= '🔑 Client Token: <strong>✓ Configured</strong><br>';
             } else {
                 $successMessage .= '⚠️ Client Token: <strong>Not configured (required for checkout)</strong><br>';
+            }
+            
+            // Add detailed error explanation if count is 0
+            if ($productCount === 0 || $priceCount === 0) {
+                $successMessage .= '<br><div class="alert alert-warning mt-2" style="font-size: 13px;">';
+                $successMessage .= '<strong>⚠️ Products/Prices Count = 0</strong><br>';
+                $successMessage .= '<strong>Possible causes:</strong><br>';
+                $successMessage .= '<ul style="margin-bottom: 0; padding-left: 20px;">';
+                
+                if ($productsFetchError || $pricesFetchError) {
+                    $successMessage .= '<li><strong>API Permission Issue:</strong> Your API Key does not have READ permission for products/prices. ';
+                    $successMessage .= 'Go to Paddle Dashboard → Developer Tools → Authentication → Regenerate API Key with <strong>product:read</strong> and <strong>price:read</strong> permissions.</li>';
+                } else {
+                    $successMessage .= '<li><strong>Wrong Environment:</strong> Products exist in SANDBOX but you\'re testing LIVE (or vice versa)</li>';
+                    $successMessage .= '<li><strong>No Products Created:</strong> No products have been created in Paddle Dashboard for this environment</li>';
+                }
+                
+                $successMessage .= '</ul>';
+                $successMessage .= '<br><strong>Note:</strong> Even if count shows 0, checkout will still work if you manually paste the correct Price ID to your Laravel product.';
+                $successMessage .= '</div>';
             }
             
             $successMessage .= '<br><small class="text-muted">API Version: 1 | Connection: Active</small>';
