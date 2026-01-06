@@ -254,36 +254,126 @@ class WebhookController extends Controller
      */
     protected function handlePaddlePaymentSuccess(Request $request): void
     {
-        $transactionId = $request->input('p_transaction_id') ?? $request->input('transaction_id');
+        // Paddle Billing API v1 uses 'data.id' for transaction ID
+        $transactionId = $request->input('data.id') ?? $request->input('transaction_id') ?? $request->input('p_transaction_id');
         
         if (!$transactionId) {
-            \Log::warning('Paddle payment success webhook missing transaction ID');
+            \Log::warning('Paddle payment success webhook missing transaction ID', [
+                'payload' => $request->all()
+            ]);
             return;
         }
 
+        \Log::info('Processing Paddle payment success', [
+            'transaction_id' => $transactionId,
+            'event_type' => $request->input('event_type'),
+        ]);
+
+        // Try to find existing order
         $order = Order::where('paddle_transaction_id', $transactionId)->first();
         
+        // If order doesn't exist, create it from webhook data
         if (!$order) {
-            \Log::warning('Order not found for Paddle transaction', ['transaction_id' => $transactionId]);
-            return;
+            \Log::info('Order not found, creating from webhook data');
+            
+            try {
+                // Extract data from Paddle webhook (Billing API v1 format)
+                $data = $request->input('data', []);
+                $customData = $data['custom_data'] ?? [];
+                
+                // Get product ID from custom data
+                $productId = $customData['product_id'] ?? null;
+                $userId = $customData['user_id'] ?? null;
+                
+                if (!$productId) {
+                    \Log::error('Product ID missing in webhook custom data', [
+                        'custom_data' => $customData,
+                        'full_payload' => $request->all()
+                    ]);
+                    return;
+                }
+                
+                $product = \App\Models\Product::find($productId);
+                if (!$product) {
+                    \Log::error('Product not found', ['product_id' => $productId]);
+                    return;
+                }
+                
+                // Extract customer info from Paddle webhook
+                $customerData = $data['customer'] ?? [];
+                $customerEmail = $customerData['email'] ?? null;
+                $customerName = $customData['customer_name'] ?? $customerData['name'] ?? $customerEmail;
+                $whatsappNumber = $customData['whatsapp_number'] ?? null;
+                
+                // Get amount from transaction
+                $totals = $data['details']['totals'] ?? [];
+                $amount = ($totals['total'] ?? 0) / 100; // Paddle sends in cents
+                $currency = $data['currency_code'] ?? 'USD';
+                
+                \Log::info('Creating order from webhook', [
+                    'product_id' => $productId,
+                    'customer_email' => $customerEmail,
+                    'amount' => $amount,
+                    'currency' => $currency,
+                ]);
+                
+                // Create order
+                $order = Order::create([
+                    'user_id' => $userId,
+                    'product_id' => $productId,
+                    'paddle_transaction_id' => $transactionId,
+                    'customer_name' => $customerName,
+                    'customer_email' => $customerEmail,
+                    'whatsapp_number' => $whatsappNumber,
+                    'total_amount' => $amount > 0 ? $amount : $product->price,
+                    'currency' => $currency,
+                    'payment_status' => 'paid',
+                    'status' => 'completed',
+                    'paid_at' => now(),
+                ]);
+                
+                \Log::info('Order created from webhook successfully', [
+                    'order_id' => $order->id,
+                    'transaction_id' => $transactionId,
+                    'customer_email' => $customerEmail,
+                ]);
+                
+            } catch (\Exception $e) {
+                \Log::error('Failed to create order from webhook', [
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                    'payload' => $request->all()
+                ]);
+                return;
+            }
+        } else {
+            // Update existing order status if not already completed
+            if ($order->payment_status !== 'paid') {
+                $order->update([
+                    'payment_status' => 'paid',
+                    'status' => 'completed',
+                    'paid_at' => now(),
+                ]);
+
+                \Log::info('Existing order updated to paid', [
+                    'order_id' => $order->id,
+                    'transaction_id' => $transactionId,
+                ]);
+            } else {
+                \Log::info('Order already marked as paid', [
+                    'order_id' => $order->id,
+                ]);
+            }
         }
 
-        // Update order status if not already completed
-        if ($order->payment_status !== 'paid') {
-            $order->update([
-                'payment_status' => 'paid',
-                'status' => 'completed',
-                'paid_at' => now(),
-            ]);
-
-            \Log::info('Paddle payment success processed', [
-                'order_id' => $order->id,
-                'transaction_id' => $transactionId,
-            ]);
-
-            // Dispatch event untuk trigger notifikasi WhatsApp
-            \App\Events\PaymentCompleted::dispatch($order);
-        }
+        // Dispatch event to trigger notifications (email & WhatsApp)
+        \Log::info('Dispatching PaymentCompleted event', [
+            'order_id' => $order->id,
+            'customer_email' => $order->customer_email,
+            'has_product' => $order->product ? 'yes' : 'no',
+        ]);
+        
+        \App\Events\PaymentCompleted::dispatch($order);
     }
 
     /**
