@@ -51,9 +51,33 @@ class AppServiceProvider extends ServiceProvider
                         }
                     }
                 }
+
+                // Load Email Settings into Mail Config
+                $emailSettings = \App\Models\Setting::getGroup('email');
+                
+                if (!empty($emailSettings)) {
+                    // Only apply if email settings are configured
+                    if (!empty($emailSettings['email_host'])) {
+                        config([
+                            'mail.mailers.smtp.host' => $emailSettings['email_host'],
+                            'mail.mailers.smtp.port' => $emailSettings['email_port'] ?? 587,
+                            'mail.mailers.smtp.encryption' => $emailSettings['email_encryption'] ?? 'tls',
+                            'mail.mailers.smtp.username' => $emailSettings['email_username'] ?? '',
+                            'mail.mailers.smtp.password' => $emailSettings['email_password'] ?? '',
+                            'mail.from.address' => $emailSettings['email_from_address'] ?? env('MAIL_FROM_ADDRESS', 'noreply@example.com'),
+                            'mail.from.name' => $emailSettings['email_from_name'] ?? env('MAIL_FROM_NAME', config('app.name')),
+                        ]);
+
+                        \Log::info('Email settings loaded from database', [
+                            'host' => $emailSettings['email_host'],
+                            'port' => $emailSettings['email_port'] ?? 587,
+                            'from' => $emailSettings['email_from_address'] ?? 'not set',
+                        ]);
+                    }
+                }
             }
         } catch (\Exception $e) {
-            \Log::error('Error loading Paddle settings: ' . $e->getMessage());
+            \Log::error('Error loading settings: ' . $e->getMessage());
         }
 
         // Register Paddle Event Listener
