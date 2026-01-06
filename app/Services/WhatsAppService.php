@@ -139,16 +139,30 @@ class WhatsAppService
         $message .= "✅ *PEMBAYARAN DITERIMA*\n";
         $message .= "━━━━━━━━━━━━━━━━\n\n";
         $message .= "Pembayaran Anda untuk *{$order->product->name}* telah kami terima dengan total {$order->formatted_amount}.\n\n";
-        $message .= "📋 *License Key Anda:*\n";
+        
+        // License Key
         if ($order->license) {
+            $message .= "🔑 *License Key Anda:*\n";
             $message .= "`{$order->license->license_key}`\n\n";
+            $message .= "_(Copy license key di atas untuk aktivasi plugin)_\n\n";
         }
-        $message .= "🎯 *Langkah Selanjutnya:*\n";
-        $message .= "1. Download plugin dari dashboard\n";
-        $message .= "2. Install di WordPress Anda\n";
-        $message .= "3. Aktivasi dengan license key di atas\n\n";
-        $message .= "Track license Anda:\n";
+        
+        // Download Instructions
+        $message .= "📥 *Download & Install:*\n";
+        $message .= "1. Cek email Anda - file plugin sudah kami kirim\n";
+        $message .= "2. Atau download dari dashboard:\n";
+        $message .= url('/dashboard/orders/' . $order->id) . "\n\n";
+        
+        $message .= "🎯 *Langkah Aktivasi:*\n";
+        $message .= "1. Upload plugin ke WordPress (Plugins → Add New → Upload)\n";
+        $message .= "2. Activate plugin\n";
+        $message .= "3. Masukkan license key di atas\n";
+        $message .= "4. Selesai! Plugin siap digunakan ✨\n\n";
+        
+        $message .= "📋 *Track License:*\n";
         $message .= url('/dashboard/licenses') . "\n\n";
+        
+        $message .= "Butuh bantuan? Hubungi support kami!\n";
         $message .= "Terima kasih atas kepercayaannya! 🙏✨";
 
         return $this->sendMessage($order->whatsapp_number ?? $order->customer_email, $message);
