@@ -19,6 +19,11 @@ Route::get('/product/{product:slug}', [HomeController::class, 'product'])->name(
 Route::get('/documentation', [HomeController::class, 'documentation'])->name('documentation');
 Route::get('/contact', [HomeController::class, 'contact'])->name('contact');
 
+// Legal Pages
+Route::get('/terms-of-service', [App\Http\Controllers\LegalController::class, 'terms'])->name('legal.terms');
+Route::get('/privacy-policy', [App\Http\Controllers\LegalController::class, 'privacy'])->name('legal.privacy');
+Route::get('/refund-policy', [App\Http\Controllers\LegalController::class, 'refund'])->name('legal.refund');
+
 // Checkout Success/Cancel (must be before checkout/{product} route)
 Route::get('/checkout/success', [CheckoutController::class, 'success'])->name('checkout.success');
 Route::get('/checkout/cancel', [CheckoutController::class, 'cancel'])->name('checkout.cancel');
