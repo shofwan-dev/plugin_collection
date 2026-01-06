@@ -43,7 +43,7 @@ class TestPaymentNotification extends Command
 
         $this->info("Testing {$status} notification for Order #{$orderId}");
         $this->info("Customer: {$order->customer_name}");
-        $this->info("Product: {$order->product->name}");
+        $this->info("Product: " . ($order->product ? $order->product->name : ($order->plan ? $order->plan->name : 'N/A')));
         $this->info("WhatsApp: " . ($order->whatsapp_number ?? 'Not set'));
         
         $this->newLine();
