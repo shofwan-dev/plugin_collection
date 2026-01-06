@@ -319,13 +319,14 @@ class WebhookController extends Controller
                 
                 // Create order
                 $order = Order::create([
+                    'order_number' => 'ORD-' . strtoupper(uniqid()),
                     'user_id' => $userId,
                     'product_id' => $productId,
                     'paddle_transaction_id' => $transactionId,
                     'customer_name' => $customerName,
                     'customer_email' => $customerEmail,
                     'whatsapp_number' => $whatsappNumber,
-                    'total_amount' => $amount > 0 ? $amount : $product->price,
+                    'amount' => $amount > 0 ? $amount : $product->price,
                     'currency' => $currency,
                     'payment_status' => 'paid',
                     'status' => 'completed',
