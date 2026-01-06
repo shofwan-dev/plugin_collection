@@ -60,8 +60,10 @@
                         </div>
                         <div class="col-md-6">
                             <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded">
-                                <span class="text-muted">Plan</span>
-                                <span class="fw-bold text-primary">{{ $order->plan->name }}</span>
+                                <span class="text-muted">Product</span>
+                                <span class="fw-bold text-primary">
+                                    {{ $order->product ? $order->product->name : ($order->plan ? $order->plan->name : 'N/A') }}
+                                </span>
                             </div>
                         </div>
                         <div class="col-md-6">

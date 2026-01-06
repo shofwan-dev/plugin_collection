@@ -83,7 +83,7 @@
                             @foreach($orders->take(5) as $order)
                             <tr class="border-b">
                                 <td class="py-3">{{ $order->order_number }}</td>
-                                <td class="py-3">{{ $order->plan->name }}</td>
+                                <td class="py-3">{{ $order->product ? $order->product->name : ($order->plan ? $order->plan->name : 'N/A') }}</td>
                                 <td class="py-3">${{ number_format($order->amount, 2) }}</td>
                                 <td class="py-3">
                                     <span class="px-2 py-1 text-xs rounded {{ $order->status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">

@@ -58,7 +58,7 @@
                             <div class="small text-muted">{{ $order->customer_email }}</div>
                         </td>
                         <td class="px-4 py-3">
-                            <span class="badge bg-light text-dark border">{{ $order->plan->name }}</span>
+                            <span class="badge bg-light text-dark border">{{ $order->product ? $order->product->name : ($order->plan ? $order->plan->name : 'N/A') }}</span>
                         </td>
                         <td class="px-4 py-3">
                             <span class="fw-semibold">${{ number_format($order->amount, 2) }}</span>

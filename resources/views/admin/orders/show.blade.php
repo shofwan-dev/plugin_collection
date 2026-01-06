@@ -114,8 +114,8 @@
                 <div class="row g-4">
                     <div class="col-md-6">
                         <label class="text-muted small mb-1">Plan</label>
-                        <div class="fw-semibold fs-5">{{ $order->plan->name }}</div>
-                        <small class="text-muted">{{ $order->plan->description }}</small>
+                        <div class="fw-semibold fs-5">{{ $order->product ? $order->product->name : ($order->plan ? $order->plan->name : 'N/A') }}</div>
+                        <small class="text-muted">{{ $order->product ? $order->product->description : ($order->plan ? $order->plan->description : '') }}</small>
                     </div>
                     <div class="col-md-6">
                         <label class="text-muted small mb-1">Amount</label>

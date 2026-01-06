@@ -93,7 +93,7 @@
                                             {{ $order->order_number }}
                                         </a>
                                     </td>
-                                    <td class="px-4 py-3">{{ $order->plan->name }}</td>
+                                    <td class="px-4 py-3">{{ $order->product ? $order->product->name : ($order->plan ? $order->plan->name : 'N/A') }}</td>
                                     <td class="px-4 py-3">${{ number_format($order->amount, 2) }}</td>
                                     <td class="px-4 py-3">
                                         @if($order->status === 'completed')

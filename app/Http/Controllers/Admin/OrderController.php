@@ -13,7 +13,7 @@ class OrderController extends Controller
 {
     public function index(Request $request): View
     {
-        $query = Order::with(['plan', 'license', 'user']);
+        $query = Order::with(['product', 'plan', 'license', 'user']); // Added product, kept plan for backward compatibility
 
         // Filter by status
         if ($request->filled('status')) {
@@ -35,7 +35,7 @@ class OrderController extends Controller
 
     public function show(Order $order): View
     {
-        $order->load(['plan', 'license', 'user']);
+        $order->load(['product', 'plan', 'license', 'user']); // Added product, kept plan for backward compatibility
         
         return view('admin.orders.show', compact('order'));
     }
