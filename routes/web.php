@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Route;
 
 // Public Pages
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/pricing', [HomeController::class, 'index'])->name('pricing'); // Alias for home page
 Route::get('/product/{product:slug}', [HomeController::class, 'product'])->name('product.show');
 Route::get('/documentation', [HomeController::class, 'documentation'])->name('documentation');
 Route::get('/contact', [HomeController::class, 'contact'])->name('contact');
