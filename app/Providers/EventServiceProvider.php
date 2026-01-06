@@ -6,6 +6,8 @@ use App\Events\PaymentCompleted;
 use App\Events\PaymentFailed;
 use App\Events\PaymentPending;
 use App\Events\PaymentRefunded;
+use App\Listeners\HandlePaddleTransaction;
+use App\Listeners\HandlePaddleTransactionCompleted;
 use App\Listeners\SendPaymentCompletedNotification;
 use App\Listeners\SendPaymentFailedNotification;
 use App\Listeners\SendPaymentPendingNotification;
@@ -13,6 +15,7 @@ use App\Listeners\SendPaymentRefundedNotification;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
+use Laravel\Paddle\Events\TransactionCompleted;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -24,6 +27,12 @@ class EventServiceProvider extends ServiceProvider
     protected $listen = [
         Registered::class => [
             SendEmailVerificationNotification::class,
+        ],
+
+        // Paddle Transaction Events
+        TransactionCompleted::class => [
+            HandlePaddleTransaction::class,
+            HandlePaddleTransactionCompleted::class,
         ],
 
         // Payment Events

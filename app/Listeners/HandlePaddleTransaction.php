@@ -17,14 +17,32 @@ class HandlePaddleTransaction
      */
     public function handle(TransactionCompleted $event): void
     {
+        Log::info('HandlePaddleTransaction: Starting to process Paddle transaction', [
+            'event_type' => 'TransactionCompleted',
+        ]);
+
         $payload = $event->payload;
         $transaction = $event->transaction;
         $billable = $event->billable;
         
+        Log::info('HandlePaddleTransaction: Transaction details', [
+            'transaction_id' => $transaction->paddle_id,
+            'amount' => $transaction->amount,
+            'currency' => $transaction->currency,
+            'billable_id' => $billable->id,
+            'billable_email' => $billable->email,
+        ]);
+
         $customData = $payload['data']['custom_data'] ?? [];
         $productId = $customData['product_id'] ?? null;
         $whatsappNumber = $customData['whatsapp_number'] ?? null;
         
+        Log::info('HandlePaddleTransaction: Custom data', [
+            'custom_data' => $customData,
+            'product_id' => $productId,
+            'whatsapp_number' => $whatsappNumber,
+        ]);
+
         if (!$productId) {
             Log::warning('Paddle Transaction missing product_id in custom_data', ['payload' => $payload]);
             return;
@@ -35,6 +53,11 @@ class HandlePaddleTransaction
             Log::error('Paddle Transaction: Product not found', ['product_id' => $productId]);
             return;
         }
+
+        Log::info('HandlePaddleTransaction: Product found', [
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+        ]);
 
         // Create or update order
         $order = Order::updateOrCreate(
@@ -54,6 +77,18 @@ class HandlePaddleTransaction
             ]
         );
 
+        // Refresh to ensure we have the latest data
+        $order->refresh();
+
+        Log::info('HandlePaddleTransaction: Order created/updated', [
+            'order_id' => $order->id,
+            'order_number' => $order->order_number,
+            'customer_name' => $order->customer_name,
+            'customer_email' => $order->customer_email,
+            'status' => $order->status,
+            'payment_status' => $order->payment_status,
+        ]);
+
         // Generate license if it doesn't exist
         if (!$order->license) {
             $license = License::create([
@@ -67,23 +102,53 @@ class HandlePaddleTransaction
                 'expires_at' => $product->valid_days ? now()->addDays($product->valid_days) : null,
             ]);
 
-            // Dispatch event untuk notifikasi (non-blocking)
+            // Refresh order to load the license relationship
+            $order->refresh();
+
+            Log::info('License created for Paddle payment', [
+                'order_id' => $order->id,
+                'license_id' => $license->id,
+                'license_key' => $license->license_key,
+            ]);
+
+            // Dispatch event untuk notifikasi WhatsApp (non-blocking)
+            Log::info('Dispatching PaymentCompleted event', [
+                'order_id' => $order->id,
+            ]);
             \App\Events\PaymentCompleted::dispatch($order);
 
             // Send Email notification
             try {
+                Log::info('Sending email notifications', [
+                    'order_id' => $order->id,
+                    'customer_email' => $order->customer_email,
+                ]);
+                
                 \Illuminate\Support\Facades\Mail::to($order->customer_email)->send(new \App\Mail\LicenseActivatedMail($license));
                 \Illuminate\Support\Facades\Mail::to($order->customer_email)->send(new \App\Mail\OrderCreatedMail($order));
+                
+                Log::info('Email notifications sent successfully', [
+                    'order_id' => $order->id,
+                ]);
             } catch (\Exception $e) {
                 Log::error('Failed to send email notifications after Paddle payment', [
                     'order_id' => $order->id,
                     'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
                 ]);
             }
 
             Log::info('Paddle Payment Processed: Order and License created', [
                 'order_id' => $order->id,
                 'license_id' => $license->id,
+                'customer_name' => $order->customer_name,
+                'customer_email' => $order->customer_email,
+                'product_name' => $product->name,
+            ]);
+        } else {
+            Log::info('License already exists for this order', [
+                'order_id' => $order->id,
+                'license_id' => $order->license->id,
             ]);
         }
     }
