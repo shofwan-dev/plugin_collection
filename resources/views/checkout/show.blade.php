@@ -84,20 +84,33 @@
     // Initialize Paddle
     @if($paddleSettings["sandbox"])
         Paddle.Environment.set('sandbox');
+        console.log('Paddle environment set to: SANDBOX');
+    @else
+        console.log('Paddle environment set to: PRODUCTION');
     @endif
     
     const paddleConfig = {
         token: '{{ $paddleSettings["client_token"] }}',
     };
     
-
+    console.log('Paddle configuration:', {
+        hasToken: !!paddleConfig.token,
+        tokenLength: paddleConfig.token ? paddleConfig.token.length : 0,
+        environment: '{{ $paddleSettings["sandbox"] ? "sandbox" : "production" }}'
+    });
     
     // Validate token
     if (!paddleConfig.token || paddleConfig.token === '') {
         console.error('PADDLE TOKEN MISSING! Check Admin Settings');
         alert('Paddle configuration error. Please contact administrator.');
     } else {
-        Paddle.Initialize(paddleConfig);
+        try {
+            Paddle.Initialize(paddleConfig);
+            console.log('Paddle initialized successfully');
+        } catch (error) {
+            console.error('Error initializing Paddle:', error);
+            alert('Failed to initialize payment system. Please contact administrator.');
+        }
     }
     
     // Form validation
@@ -115,9 +128,9 @@
         button.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Loading...';
         
         // Get form data
-        const customerEmail = document.getElementById('email').value;
-        const customerName = document.getElementById('customer_name').value;
-        const whatsappNumber = document.getElementById('whatsapp_number').value;
+        const customerEmail = document.getElementById('email').value.trim();
+        const customerName = document.getElementById('customer_name').value.trim();
+        const whatsappNumber = document.getElementById('whatsapp_number').value.trim();
         
         // Validate
         if (!customerEmail || !customerName || !whatsappNumber) {
@@ -127,28 +140,64 @@
             return;
         }
         
-        // Open Paddle Checkout
-        Paddle.Checkout.open({
-            items: [{
-                priceId: '{{ $product->paddle_price_id }}',
-                quantity: 1
-            }],
-            customer: {
-                email: customerEmail, // Pre-fill email but still editable
-            },
-            customData: {
-                product_id: {{ $product->id }},
-                user_id: {{ auth()->id() }},
-                customer_name: customerName,
-                whatsapp_number: whatsappNumber
-            },
-            settings: {
-                successUrl: '{{ route("checkout.success") }}',
-                displayMode: 'overlay',
-                theme: 'light',
-                locale: 'en'
-            }
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(customerEmail)) {
+            alert('Please enter a valid email address');
+            button.disabled = false;
+            button.innerHTML = '<i class="bi bi-lock-fill me-2"></i>Proceed to Secure Payment';
+            return;
+        }
+        
+        // Sanitize WhatsApp number - remove any non-digit characters
+        const sanitizedWhatsApp = whatsappNumber.replace(/[^0-9]/g, '');
+        
+        if (sanitizedWhatsApp.length < 10) {
+            alert('Please enter a valid WhatsApp number (minimum 10 digits)');
+            button.disabled = false;
+            button.innerHTML = '<i class="bi bi-lock-fill me-2"></i>Proceed to Secure Payment';
+            return;
+        }
+        
+        console.log('Initiating Paddle checkout with data:', {
+            priceId: '{{ $product->paddle_price_id }}',
+            email: customerEmail,
+            name: customerName,
+            whatsapp: sanitizedWhatsApp
         });
+        
+        try {
+            // Open Paddle Checkout
+            Paddle.Checkout.open({
+                items: [{
+                    priceId: '{{ $product->paddle_price_id }}',
+                    quantity: 1
+                }],
+                customer: {
+                    email: customerEmail, // Pre-fill email but still editable
+                },
+                customData: {
+                    product_id: '{{ $product->id }}',
+                    user_id: '{{ auth()->id() ?? "guest" }}',
+                    customer_name: customerName,
+                    whatsapp_number: sanitizedWhatsApp
+                },
+                settings: {
+                    successUrl: '{{ route("checkout.success") }}',
+                    displayMode: 'overlay',
+                    theme: 'light',
+                    locale: 'en'
+                }
+            });
+            
+            console.log('Paddle checkout initiated successfully');
+        } catch (error) {
+            console.error('Error opening Paddle checkout:', error);
+            alert('An error occurred while opening the payment window. Please try again.');
+            button.disabled = false;
+            button.innerHTML = '<i class="bi bi-lock-fill me-2"></i>Proceed to Secure Payment';
+            return;
+        }
 
         // Reset button state after a short delay since Paddle.Checkout.open doesn't return a promise
         setTimeout(() => {

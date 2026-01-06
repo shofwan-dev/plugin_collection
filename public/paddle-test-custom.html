@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paddle Checkout Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .console-output {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .console-output .log {
+            margin-bottom: 5px;
+            padding: 3px 0;
+        }
+
+        .console-output .log.info {
+            color: #4fc3f7;
+        }
+
+        .console-output .log.error {
+            color: #ef5350;
+        }
+
+        .console-output .log.success {
+            color: #66bb6a;
+        }
+
+        .console-output .log.warning {
+            color: #ffb74d;
+        }
+
+        .status {
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .status.error {
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #ef5350;
+        }
+
+        .status.success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #66bb6a;
+        }
+
+        .status.warning {
+            background: #fff3e0;
+            color: #e65100;
+            border: 1px solid #ffb74d;
+        }
+
+        .help-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🏓 Paddle Checkout Test</h1>
+        <p class="subtitle">Test your Paddle integration with custom data</p>
+
+        <div id="status-message"></div>
+
+        <form id="testForm">
+            <div class="form-group">
+                <label for="environment">Environment</label>
+                <select id="environment" required>
+                    <option value="sandbox" selected>Sandbox (Testing)</option>
+                    <option value="live">Live (Production)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="clientToken">Paddle Client Token *</label>
+                <input type="text" id="clientToken" placeholder="test_xxx atau live_xxx" required>
+                <div class="help-text">Get from Paddle Dashboard → Developer Tools → Authentication</div>
+            </div>
+
+            <div class="form-group">
+                <label for="priceId">Price ID *</label>
+                <input type="text" id="priceId" placeholder="pri_01xxx" required>
+                <div class="help-text">Get from Paddle Dashboard → Products → Your Product → Prices</div>
+            </div>
+
+            <hr style="margin: 30px 0; border: none; border-top: 1px solid #e0e0e0;">
+
+            <div class="form-group">
+                <label for="customerName">Customer Name</label>
+                <input type="text" id="customerName" placeholder="John Doe" value="Test User">
+            </div>
+
+            <div class="form-group">
+                <label for="customerEmail">Customer Email *</label>
+                <input type="email" id="customerEmail" placeholder="test@example.com" value="test@example.com" required>
+            </div>
+
+            <div class="form-group">
+                <label for="whatsappNumber">WhatsApp Number</label>
+                <input type="text" id="whatsappNumber" placeholder="628123456789" value="628123456789">
+                <div class="help-text">Only digits will be sent to Paddle</div>
+            </div>
+
+            <button type="button" class="btn btn-primary" id="testButton">
+                🚀 Test Paddle Checkout
+            </button>
+        </form>
+
+        <div class="console-output" id="console">
+            <div class="log info">Ready to test Paddle integration...</div>
+        </div>
+    </div>
+
+    <!-- Paddle.js -->
+    <script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
+
+    <script>
+        const consoleDiv = document.getElementById('console');
+        const statusDiv = document.getElementById('status-message');
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `log ${type}`;
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            consoleDiv.appendChild(logEntry);
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        }
+
+        function showStatus(message, type = 'info') {
+            statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        document.getElementById('testButton').addEventListener('click', function () {
+            const button = this;
+            button.disabled = true;
+            button.textContent = '⏳ Processing...';
+
+            // Clear previous logs
+            consoleDiv.innerHTML = '';
+            statusDiv.innerHTML = '';
+
+            // Get form values
+            const environment = document.getElementById('environment').value;
+            const clientToken = document.getElementById('clientToken').value.trim();
+            const priceId = document.getElementById('priceId').value.trim();
+            const customerName = document.getElementById('customerName').value.trim();
+            const customerEmail = document.getElementById('customerEmail').value.trim();
+            const whatsappNumber = document.getElementById('whatsappNumber').value.trim();
+
+            // Validate
+            if (!clientToken || !priceId || !customerEmail) {
+                log('❌ Please fill in all required fields', 'error');
+                showStatus('❌ Please fill in all required fields (marked with *)', 'error');
+                button.disabled = false;
+                button.textContent = '🚀 Test Paddle Checkout';
+                return;
+            }
+
+            // Validate email
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(customerEmail)) {
+                log('❌ Invalid email format', 'error');
+                showStatus('❌ Please enter a valid email address', 'error');
+                button.disabled = false;
+                button.textContent = '🚀 Test Paddle Checkout';
+                return;
+            }
+
+            // Sanitize WhatsApp number
+            const sanitizedWhatsApp = whatsappNumber.replace(/[^0-9]/g, '');
+
+            log('🔧 Starting Paddle test...', 'info');
+            log(`Environment: ${environment.toUpperCase()}`, 'info');
+            log(`Client Token: ${clientToken.substring(0, 10)}...`, 'info');
+            log(`Price ID: ${priceId}`, 'info');
+
+            try {
+                // Set environment
+                if (environment === 'sandbox') {
+                    Paddle.Environment.set('sandbox');
+                    log('✅ Environment set to SANDBOX', 'success');
+                } else {
+                    log('✅ Environment set to PRODUCTION', 'success');
+                }
+
+                // Initialize Paddle
+                log('🔄 Initializing Paddle...', 'info');
+                Paddle.Initialize({
+                    token: clientToken
+                });
+                log('✅ Paddle initialized successfully', 'success');
+
+                // Prepare checkout data
+                const checkoutData = {
+                    items: [{
+                        priceId: priceId,
+                        quantity: 1
+                    }],
+                    customer: {
+                        email: customerEmail
+                    },
+                    customData: {
+                        product_id: '1',
+                        user_id: '2',
+                        customer_name: customerName,
+                        whatsapp_number: sanitizedWhatsApp
+                    },
+                    settings: {
+                        successUrl: window.location.href + '?success=true',
+                        displayMode: 'overlay',
+                        theme: 'light',
+                        locale: 'en'
+                    }
+                };
+
+                log('📦 Checkout data prepared:', 'info');
+                log(JSON.stringify(checkoutData, null, 2), 'info');
+
+                // Open checkout
+                log('🚀 Opening Paddle checkout...', 'info');
+                Paddle.Checkout.open(checkoutData);
+
+                log('✅ Paddle checkout opened successfully!', 'success');
+                showStatus('✅ Success! Paddle checkout opened. If you see the payment overlay, your integration is working correctly!', 'success');
+
+            } catch (error) {
+                log('❌ Error: ' + error.message, 'error');
+                log('Stack: ' + error.stack, 'error');
+                showStatus('❌ Error: ' + error.message + '. Check console logs above for details.', 'error');
+            } finally {
+                button.disabled = false;
+                button.textContent = '🚀 Test Paddle Checkout';
+            }
+        });
+
+        // Check if returning from success
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('success') === 'true') {
+            log('✅ Returned from successful checkout!', 'success');
+            showStatus('🎉 Payment flow completed! Check your Paddle dashboard for the transaction.', 'success');
+        }
+
+        log('ℹ️ Fill in the form and click "Test Paddle Checkout" to begin', 'info');
+    </script>
+</body>
+
+</html>

@@ -269,43 +269,115 @@ class SettingController extends Controller
         
         try {
             $apiKey = Setting::get('paddle_api_key');
+            $clientToken = Setting::get('paddle_client_token');
+            $sellerId = Setting::get('paddle_seller_id');
             $environment = Setting::get('paddle_environment', 'sandbox');
 
             Log::channel('daily')->info('Test Paddle Configuration', [
                 'environment' => $environment,
                 'api_key' => $apiKey ? 'set (length: ' . strlen($apiKey) . ')' : 'not set',
-                'client_token' => Setting::get('paddle_client_token') ? 'set' : 'not set',
+                'client_token' => $clientToken ? 'set (length: ' . strlen($clientToken) . ')' : 'not set',
+                'seller_id' => $sellerId ?? 'not set',
             ]);
 
+            // Validation
             if (!$apiKey) {
                 Log::channel('daily')->error('Test Paddle Failed: API key not configured');
-                return back()->with('error', 'Please configure Paddle API key first');
+                return back()->with('error', '❌ Please configure Paddle API key first');
             }
 
-            // Test API connection by fetching event types (doesn't require permissions)
+            if (!$clientToken) {
+                Log::channel('daily')->error('Test Paddle Failed: Client token not configured');
+                return back()->with('warning', '⚠️ Paddle API Key is valid, but Client Token is missing. Please add Client Token for checkout to work.');
+            }
+
+            // Determine API URL based on environment
             $apiUrl = $environment === 'live' 
                 ? 'https://api.paddle.com' 
                 : 'https://sandbox-api.paddle.com';
 
+            Log::channel('daily')->info('Testing Paddle API', ['api_url' => $apiUrl]);
+
+            // Test 1: Fetch event types (basic connectivity)
             $response = \Illuminate\Support\Facades\Http::withHeaders([
                 'Authorization' => 'Bearer ' . $apiKey,
                 'Paddle-Version' => '1',
-            ])->get($apiUrl . '/event-types');
+            ])->timeout(10)->get($apiUrl . '/event-types');
 
-            if ($response->successful()) {
-                Log::channel('daily')->info('=== TEST PADDLE SUCCESS ===', [
+            if (!$response->successful()) {
+                Log::channel('daily')->error('=== TEST PADDLE FAILED (Event Types) ===', [
                     'status' => $response->status(),
+                    'response' => $response->json(),
                 ]);
-                return back()->with('success', '✅ Paddle connection successful! Environment: ' . strtoupper($environment));
+                
+                $errorMessage = $response->json()['error']['detail'] ?? 'Unable to connect to Paddle API';
+                return back()->with('error', '❌ Paddle connection failed: ' . $errorMessage);
             }
 
-            Log::channel('daily')->error('=== TEST PADDLE FAILED ===', [
-                'status' => $response->status(),
-                'response' => $response->json(),
+            // Test 2: Fetch products (validate permissions and data)
+            $productsResponse = \Illuminate\Support\Facades\Http::withHeaders([
+                'Authorization' => 'Bearer ' . $apiKey,
+                'Paddle-Version' => '1',
+            ])->timeout(10)->get($apiUrl . '/products', [
+                'per_page' => 10
             ]);
+
+            $productCount = 0;
+            $priceCount = 0;
             
-            $errorMessage = $response->json()['error']['detail'] ?? 'Unknown error';
-            return back()->with('error', '❌ Paddle connection failed: ' . $errorMessage);
+            if ($productsResponse->successful()) {
+                $productsData = $productsResponse->json();
+                $productCount = $productsData['meta']['pagination']['total'] ?? 0;
+                
+                Log::channel('daily')->info('Paddle Products Fetched', [
+                    'count' => $productCount,
+                ]);
+
+                // Test 3: Fetch prices
+                $pricesResponse = \Illuminate\Support\Facades\Http::withHeaders([
+                    'Authorization' => 'Bearer ' . $apiKey,
+                    'Paddle-Version' => '1',
+                ])->timeout(10)->get($apiUrl . '/prices', [
+                    'per_page' => 10
+                ]);
+
+                if ($pricesResponse->successful()) {
+                    $pricesData = $pricesResponse->json();
+                    $priceCount = $pricesData['meta']['pagination']['total'] ?? 0;
+                    
+                    Log::channel('daily')->info('Paddle Prices Fetched', [
+                        'count' => $priceCount,
+                    ]);
+                }
+            }
+
+            // Success with detailed info
+            Log::channel('daily')->info('=== TEST PADDLE SUCCESS ===', [
+                'status' => $response->status(),
+                'environment' => $environment,
+                'products' => $productCount,
+                'prices' => $priceCount,
+            ]);
+
+            $successMessage = '✅ <strong>Paddle Connected Successfully!</strong><br>';
+            $successMessage .= '🌍 Environment: <strong>' . strtoupper($environment) . '</strong><br>';
+            
+            if ($sellerId) {
+                $successMessage .= '🏢 Seller ID: <strong>' . $sellerId . '</strong><br>';
+            }
+            
+            $successMessage .= '📦 Products: <strong>' . $productCount . '</strong><br>';
+            $successMessage .= '💰 Prices: <strong>' . $priceCount . '</strong><br>';
+            
+            if ($clientToken) {
+                $successMessage .= '🔑 Client Token: <strong>✓ Configured</strong><br>';
+            } else {
+                $successMessage .= '⚠️ Client Token: <strong>Not configured (required for checkout)</strong><br>';
+            }
+            
+            $successMessage .= '<br><small class="text-muted">API Version: 1 | Connection: Active</small>';
+
+            return back()->with('success', $successMessage);
 
         } catch (\Exception $e) {
             Log::channel('daily')->error('=== TEST PADDLE EXCEPTION ===', [
