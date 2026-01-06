@@ -16,10 +16,21 @@ class OrderController extends Controller
      */
     public function index(): View
     {
-        $orders = Order::where('user_id', Auth::id())
-            ->with(['plan', 'license'])
+        $userId = Auth::id();
+        
+        \Log::info('Customer viewing orders', [
+            'user_id' => $userId,
+        ]);
+
+        $orders = Order::where('user_id', $userId)
+            ->with(['product', 'license']) // Changed from 'plan' to 'product'
             ->latest()
             ->paginate(10);
+
+        \Log::info('Orders retrieved for customer', [
+            'user_id' => $userId,
+            'count' => $orders->total(),
+        ]);
 
         return view('customer.orders.index', compact('orders'));
     }
@@ -34,7 +45,7 @@ class OrderController extends Controller
             abort(403, 'Unauthorized access to this order');
         }
 
-        $order->load(['plan', 'license']);
+        $order->load(['product', 'license']); // Changed from 'plan' to 'product'
 
         return view('customer.orders.show', compact('order'));
     }
