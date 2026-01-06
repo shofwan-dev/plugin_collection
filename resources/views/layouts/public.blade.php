@@ -294,9 +294,9 @@
                 <div class="col-lg-2 col-md-4">
                     <h6 class="fw-bold mb-3">Legal</h6>
                     <ul class="list-unstyled">
-                        <li class="mb-2"><a href="#">Privacy Policy</a></li>
-                        <li class="mb-2"><a href="#">Terms of Service</a></li>
-                        <li class="mb-2"><a href="#">Refund Policy</a></li>
+                        <li class="mb-2"><a href="{{ route('legal.privacy') }}">Privacy Policy</a></li>
+                        <li class="mb-2"><a href="{{ route('legal.terms') }}">Terms of Service</a></li>
+                        <li class="mb-2"><a href="{{ route('legal.refund') }}">Refund Policy</a></li>
                     </ul>
                 </div>
 
