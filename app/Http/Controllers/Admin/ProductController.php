@@ -326,4 +326,88 @@ class ProductController extends Controller
 
         return Storage::disk('public')->download($product->file_path, $product->file_name);
     }
+
+    /**
+     * Duplicate an existing product
+     */
+    public function duplicate(Product $product): RedirectResponse
+    {
+        try {
+            // Create array of product data
+            $newProductData = $product->toArray();
+            
+            // Remove unique fields
+            unset($newProductData['id']);
+            unset($newProductData['created_at']);
+            unset($newProductData['updated_at']);
+            
+            // Modify name and slug to indicate it's a copy
+            $newProductData['name'] = $product->name . ' (Copy)';
+            $newProductData['slug'] = Str::slug($newProductData['name']);
+            
+            // Ensure slug is unique
+            $originalSlug = $newProductData['slug'];
+            $counter = 1;
+            while (Product::where('slug', $newProductData['slug'])->exists()) {
+                $newProductData['slug'] = $originalSlug . '-' . $counter;
+                $counter++;
+            }
+            
+            // Set as inactive by default
+            $newProductData['is_active'] = false;
+            
+            // Copy file if exists
+            if ($product->file_path && Storage::disk('public')->exists($product->file_path)) {
+                $extension = pathinfo($product->file_path, PATHINFO_EXTENSION);
+                $newFileName = time() . '_' . Str::slug($newProductData['name']) . '.' . $extension;
+                $newFilePath = 'products/' . $newFileName;
+                
+                // Copy the file
+                Storage::disk('public')->copy($product->file_path, $newFilePath);
+                
+                $newProductData['file_path'] = $newFilePath;
+                $newProductData['file_name'] = $product->file_name . ' (Copy)';
+            }
+            
+            // Copy image if exists
+            if ($product->image && Storage::disk('public')->exists($product->image)) {
+                $extension = pathinfo($product->image, PATHINFO_EXTENSION);
+                $newImageName = time() . '_' . Str::slug($newProductData['name']) . '_image.' . $extension;
+                $newImagePath = 'products/images/' . $newImageName;
+                
+                // Ensure directory exists
+                $imagesPath = storage_path('app/public/products/images');
+                if (!file_exists($imagesPath)) {
+                    mkdir($imagesPath, 0755, true);
+                }
+                
+                // Copy the image
+                Storage::disk('public')->copy($product->image, $newImagePath);
+                
+                $newProductData['image'] = $newImagePath;
+            }
+            
+            // Create the duplicate product
+            $newProduct = Product::create($newProductData);
+            
+            \Log::info('Product duplicated successfully', [
+                'original_id' => $product->id,
+                'new_id' => $newProduct->id,
+                'new_name' => $newProduct->name
+            ]);
+            
+            return redirect()->route('admin.products.index')
+                ->with('success', 'Product duplicated successfully! New product: "' . $newProduct->name . '" (set as inactive)');
+                
+        } catch (\Exception $e) {
+            \Log::error('Product duplication error', [
+                'product_id' => $product->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return redirect()->back()
+                ->with('error', 'Failed to duplicate product: ' . $e->getMessage());
+        }
+    }
 }

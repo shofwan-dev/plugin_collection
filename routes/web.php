@@ -87,6 +87,7 @@ Route::middleware(['auth', 'verified', \App\Http\Middleware\IsAdmin::class])->pr
     // Products
     Route::resource('products', \App\Http\Controllers\Admin\ProductController::class);
     Route::get('/products/{product}/download', [\App\Http\Controllers\Admin\ProductController::class, 'download'])->name('products.download');
+    Route::post('/products/{product}/duplicate', [\App\Http\Controllers\Admin\ProductController::class, 'duplicate'])->name('products.duplicate');
     
     // Users
     Route::resource('users', \App\Http\Controllers\Admin\UserController::class);

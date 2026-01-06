@@ -123,11 +123,26 @@
                                     <i class="bi bi-download"></i>
                                 </a>
                                 @endif
+                                
                                 <a href="{{ route('admin.products.edit', $product) }}" 
                                    class="btn btn-sm btn-outline-secondary"
                                    title="Edit">
                                     <i class="bi bi-pencil"></i>
                                 </a>
+                                
+                                <!-- Duplicate Product -->
+                                <form action="{{ route('admin.products.duplicate', $product) }}" 
+                                      method="POST" 
+                                      class="d-inline"
+                                      onsubmit="return confirm('Duplicate this product? A copy will be created with \'(Copy)\' suffix.')">
+                                    @csrf
+                                    <button type="submit" 
+                                            class="btn btn-sm btn-outline-success"
+                                            title="Duplicate Product">
+                                        <i class="bi bi-files"></i>
+                                    </button>
+                                </form>
+                                
                                 <form action="{{ route('admin.products.destroy', $product) }}" 
                                       method="POST" 
                                       class="d-inline"
