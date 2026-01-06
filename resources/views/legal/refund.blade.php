@@ -3,7 +3,7 @@
 @section('legal-content')
 @php
     $siteName = \App\Models\Setting::get('site_name', 'Our Store');
-    $companyEmail = \App\Models\Setting::get('company_email', 'support@example.com');
+    $contactEmail = \App\Models\Setting::get('contact_email', 'support@example.com');
 @endphp
 
 <div class="mb-4">
@@ -52,7 +52,7 @@
 <h3>2.1 How to Request a Refund</h3>
 <p>To request a refund:</p>
 <ol>
-    <li><strong>Contact Support:</strong> Email us at <a href="mailto:{{ $companyEmail }}">{{ $companyEmail }}</a> with your order number</li>
+    <li><strong>Contact Support:</strong> Email us at <a href="mailto:{{ $contactEmail }}">{{ $contactEmail }}</a> with your order number</li>
     <li><strong>Provide Details:</strong> Explain the reason for your refund request</li>
     <li><strong>Provide Evidence:</strong> Include screenshots,  error messages, or other relevant documentation</li>
     <li><strong>Allow Investigation:</strong> Give our support team 24-48 hours to investigate and attempt to resolve the issue</li>
@@ -274,7 +274,7 @@
     If you have questions about our Refund Policy or need assistance with a refund request:
 </p>
 <ul>
-    <li><strong>Email:</strong> <a href="mailto:{{ $companyEmail }}">{{ $companyEmail }}</a></li>
+    <li><strong>Email:</strong> <a href="mailto:{{ $contactEmail }}">{{ $contactEmail }}</a></li>
     <li><strong>Subject:</strong> "Refund Request - Order #[Your Order Number]"</li>
     <li><strong>Response Time:</strong> Within 24-48 hours</li>
 </ul>

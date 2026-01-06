@@ -3,8 +3,8 @@
 @section('legal-content')
 @php
     $siteName = \App\Models\Setting::get('site_name', 'Our Store');
-    $companyEmail = \App\Models\Setting::get('company_email', 'support@example.com');
-    $companyAddress = \App\Models\Setting::get('company_address', 'Address not set');
+    $contactEmail = \App\Models\Setting::get('contact_email', 'support@example.com');
+    $contactPhone = \App\Models\Setting::get('contact_phone');
 @endphp
 
 <div class="mb-4">
@@ -260,11 +260,11 @@
     If you have questions about this Privacy Policy or wish to exercise your rights, please contact us:
 </p>
 <ul>
-    <li><strong>Email:</strong> <a href="mailto:{{ $companyEmail }}">{{ $companyEmail }}</a></li>
-    <li><strong>Data Protection Officer:</strong> <a href="mailto:{{ $companyEmail }}">{{ $companyEmail }}</a></li>
+    <li><strong>Email:</strong> <a href="mailto:{{ $contactEmail }}">{{ $contactEmail }}</a></li>
+    <li><strong>Data Protection Officer:</strong> <a href="mailto:{{ $contactEmail }}">{{ $contactEmail }}</a></li>
     <li><strong>Website:</strong> <a href="{{ route('home') }}">{{ config('app.url') }}</a></li>
-    @if($companyAddress && $companyAddress != 'Address not set')
-    <li><strong>Address:</strong> {{ $companyAddress }}</li>
+    @if($contactPhone)
+    <li><strong>Phone:</strong> {{ $contactPhone }}</li>
     @endif
 </ul>
 

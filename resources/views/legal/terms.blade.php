@@ -3,8 +3,8 @@
 @section('legal-content')
 @php
     $siteName = \App\Models\Setting::get('site_name', 'Our Store');
-    $companyEmail = \App\Models\Setting::get('company_email', 'support@example.com');
-    $companyAddress = \App\Models\Setting::get('company_address', 'Address not set');
+    $contactEmail = \App\Models\Setting::get('contact_email', 'support@example.com');
+    $contactPhone = \App\Models\Setting::get('contact_phone');
 @endphp
 
 <div class="mb-4">
