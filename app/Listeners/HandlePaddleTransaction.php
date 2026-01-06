@@ -67,17 +67,8 @@ class HandlePaddleTransaction
                 'expires_at' => $product->valid_days ? now()->addDays($product->valid_days) : null,
             ]);
 
-            // Send WhatsApp notifications
-            try {
-                $whatsapp = app(\App\Services\WhatsAppService::class);
-                $whatsapp->sendPaymentSuccessNotification($order);
-                $whatsapp->sendAdminPaymentSuccessNotification($order);
-            } catch (\Exception $e) {
-                Log::error('Failed to send WhatsApp notifications after Paddle payment', [
-                    'order_id' => $order->id,
-                    'error' => $e->getMessage(),
-                ]);
-            }
+            // Dispatch event untuk notifikasi (non-blocking)
+            \App\Events\PaymentCompleted::dispatch($order);
 
             // Send Email notification
             try {

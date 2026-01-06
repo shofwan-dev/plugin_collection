@@ -180,4 +180,210 @@ class WebhookController extends Controller
 
         return $formatted;
     }
+
+    /**
+     * Handle Paddle webhook
+     * 
+     * This method handles Paddle webhook events (transaction.completed, transaction.refunded, etc.)
+     * It dispatches events instead of directly handling them to avoid blocking and to decouple logic
+     */
+    public function paddle(Request $request): Response
+    {
+        // Log incoming webhook
+        \Log::info('Paddle Webhook Received', [
+            'payload' => $request->all(),
+            'headers' => $request->headers->all(),
+        ]);
+
+        try {
+            // Laravel Cashier Paddle will handle webhook verification automatically
+            // We just need to process the event data
+            
+            $eventType = $request->input('alert_name') ?? $request->input('event_type');
+            
+            if (!$eventType) {
+                \Log::warning('Paddle webhook missing event type');
+                return response('Missing event type', 400);
+            }
+
+            \Log::info('Processing Paddle webhook', ['event_type' => $eventType]);
+
+            // Handle different event types
+            switch ($eventType) {
+                case 'transaction.completed':
+                case 'payment_succeeded':
+                case 'subscription_payment_succeeded':
+                    $this->handlePaddlePaymentSuccess($request);
+                    break;
+
+                case 'transaction.payment_failed':
+                case 'payment_failed':
+                    $this->handlePaddlePaymentFailed($request);
+                    break;
+
+                case 'transaction.created':
+                case 'payment_created':
+                    $this->handlePaddlePaymentPending($request);
+                    break;
+
+                case 'transaction.refunded':
+                case 'payment_refunded':
+                    $this->handlePaddlePaymentRefunded($request);
+                    break;
+
+                default:
+                    \Log::info('Unhandled Paddle webhook event type', ['type' => $eventType]);
+            }
+
+            return response('Webhook received', 200);
+
+        } catch (\Exception $e) {
+            \Log::error('Error processing Paddle webhook', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            
+            // Return 200 to prevent Paddle from retrying
+            // We've logged the error for manual investigation
+            return response('Error logged', 200);
+        }
+    }
+
+    /**
+     * Handle Paddle payment success
+     */
+    protected function handlePaddlePaymentSuccess(Request $request): void
+    {
+        $transactionId = $request->input('p_transaction_id') ?? $request->input('transaction_id');
+        
+        if (!$transactionId) {
+            \Log::warning('Paddle payment success webhook missing transaction ID');
+            return;
+        }
+
+        $order = Order::where('paddle_transaction_id', $transactionId)->first();
+        
+        if (!$order) {
+            \Log::warning('Order not found for Paddle transaction', ['transaction_id' => $transactionId]);
+            return;
+        }
+
+        // Update order status if not already completed
+        if ($order->payment_status !== 'paid') {
+            $order->update([
+                'payment_status' => 'paid',
+                'status' => 'completed',
+                'paid_at' => now(),
+            ]);
+
+            \Log::info('Paddle payment success processed', [
+                'order_id' => $order->id,
+                'transaction_id' => $transactionId,
+            ]);
+
+            // Dispatch event untuk trigger notifikasi WhatsApp
+            \App\Events\PaymentCompleted::dispatch($order);
+        }
+    }
+
+    /**
+     * Handle Paddle payment failed
+     */
+    protected function handlePaddlePaymentFailed(Request $request): void
+    {
+        $transactionId = $request->input('p_transaction_id') ?? $request->input('transaction_id');
+        $reason = $request->input('failure_reason') ?? 'Payment failed';
+        
+        if (!$transactionId) {
+            \Log::warning('Paddle payment failed webhook missing transaction ID');
+            return;
+        }
+
+        $order = Order::where('paddle_transaction_id', $transactionId)->first();
+        
+        if (!$order) {
+            \Log::warning('Order not found for Paddle transaction', ['transaction_id' => $transactionId]);
+            return;
+        }
+
+        $order->update([
+            'payment_status' => 'failed',
+            'status' => 'failed',
+        ]);
+
+        \Log::info('Paddle payment failed processed', [
+            'order_id' => $order->id,
+            'transaction_id' => $transactionId,
+            'reason' => $reason,
+        ]);
+
+        // Dispatch event untuk trigger notifikasi WhatsApp
+        \App\Events\PaymentFailed::dispatch($order, $reason);
+    }
+
+    /**
+     * Handle Paddle payment pending
+     */
+    protected function handlePaddlePaymentPending(Request $request): void
+    {
+        $transactionId = $request->input('p_transaction_id') ?? $request->input('transaction_id');
+        
+        if (!$transactionId) {
+            \Log::warning('Paddle payment pending webhook missing transaction ID');
+            return;
+        }
+
+        $order = Order::where('paddle_transaction_id', $transactionId)->first();
+        
+        if (!$order) {
+            \Log::warning('Order not found for Paddle transaction', ['transaction_id' => $transactionId]);
+            return;
+        }
+
+        $order->update([
+            'payment_status' => 'pending',
+            'status' => 'pending',
+        ]);
+
+        \Log::info('Paddle payment pending processed', [
+            'order_id' => $order->id,
+            'transaction_id' => $transactionId,
+        ]);
+
+        // Dispatch event untuk trigger notifikasi WhatsApp
+        \App\Events\PaymentPending::dispatch($order);
+    }
+
+    /**
+     * Handle Paddle payment refunded
+     */
+    protected function handlePaddlePaymentRefunded(Request $request): void
+    {
+        $transactionId = $request->input('p_transaction_id') ?? $request->input('transaction_id');
+        
+        if (!$transactionId) {
+            \Log::warning('Paddle payment refunded webhook missing transaction ID');
+            return;
+        }
+
+        $order = Order::where('paddle_transaction_id', $transactionId)->first();
+        
+        if (!$order) {
+            \Log::warning('Order not found for Paddle transaction', ['transaction_id' => $transactionId]);
+            return;
+        }
+
+        $order->update([
+            'payment_status' => 'refunded',
+            'status' => 'refunded',
+        ]);
+
+        \Log::info('Paddle payment refunded processed', [
+            'order_id' => $order->id,
+            'transaction_id' => $transactionId,
+        ]);
+
+        // Dispatch event untuk trigger notifikasi WhatsApp
+        \App\Events\PaymentRefunded::dispatch($order);
+    }
 }

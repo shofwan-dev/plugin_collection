@@ -37,6 +37,7 @@ Route::middleware('auth')->group(function () {
 
 // Webhooks
 Route::post('/webhook/stripe', [WebhookController::class, 'stripe'])->name('webhook.stripe');
+Route::post('/webhook/paddle', [WebhookController::class, 'paddle'])->name('webhook.paddle');
 
 // Customer Dashboard
 Route::middleware(['auth', 'verified', 'redirect.role'])->group(function () {
