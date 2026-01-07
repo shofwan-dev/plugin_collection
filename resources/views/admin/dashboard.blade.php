@@ -216,7 +216,7 @@
                                 <div class="fw-medium mb-1">
                                     <code class="text-primary small">{{ Str::limit($license->license_key, 20) }}</code>
                                 </div>
-                                <small class="text-muted">{{ $license->plan->name }}</small>
+                                <small class="text-muted">{{ $license->product?->name ?? 'No Product' }}</small>
                             </div>
                             <div>
                                 @if($license->status === 'active')
